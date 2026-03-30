@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Context-Window as a Scarce Resource — Enterprise LLM Architecture</title>
+<style>
+/* ═══════════════════════════════════════════════════
+   McKINSEY STYLE — 5-COLOR PALETTE ONLY
+   #005EB8  Primary blue  (headings, key boxes, bars)
+   #222222  Main text
+   #A2AAAD  Light gray (borders, gridlines, secondary)
+   #F5F5F5  Background
+   #F3C13A  Accent / highlight (key metrics, callouts)
+═══════════════════════════════════════════════════ */
+
+:root {
+  --mck-blue:   #005EB8;
+  --mck-text:   #222222;
+  --mck-gray:   #A2AAAD;
+  --mck-bg:     #F5F5F5;
+  --mck-yellow: #F3C13A;
+  --mck-white:  #ffffff;
+  --slide-max:  1160px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: #e8e8e8;
+  color: var(--mck-text);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+/* ── NAVIGATION ─────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: var(--mck-blue);
+  padding: 10px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+nav .brand {
+  color: #ffffff;
+  font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+  font-weight: 600; opacity: 0.9;
+}
+nav .slide-pills { display: flex; gap: 5px; }
+nav .pill {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.7);
+  font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; text-decoration: none; transition: all 0.18s;
+}
+nav .pill:hover, nav .pill.active {
+  background: var(--mck-yellow); border-color: var(--mck-yellow);
+  color: var(--mck-text);
+}
+
+/* ── DECK WRAPPER ───────────────────────────── */
+.deck { padding-top: 56px; }
+
+section {
+  min-height: 100vh;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 64px 48px;
+  position: relative;
+}
+section:nth-child(odd)  { background: var(--mck-bg); }
+section:nth-child(even) { background: var(--mck-white); }
+
+.slide-inner {
+  width: 100%; max-width: var(--slide-max);
+}
+
+/* ── SLIDE META ROW ─────────────────────────── */
+.slide-meta {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 28px;
+  border-bottom: 2px solid var(--mck-blue); padding-bottom: 12px;
+}
+.slide-num {
+  font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
+  color: var(--mck-blue); text-transform: uppercase;
+}
+.slide-tag {
+  font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--mck-gray); border: 1px solid var(--mck-gray); padding: 2px 10px;
+  border-radius: 2px;
+}
+.slide-bar { flex: 1; } /* spacer */
+
+/* ── HEADINGS ───────────────────────────────── */
+h1.deck-title {
+  font-size: 44px; font-weight: 700; line-height: 1.12;
+  color: var(--mck-blue); margin-bottom: 16px;
+  letter-spacing: -0.3px;
+}
+h2.slide-title {
+  font-size: 30px; font-weight: 700; line-height: 1.2;
+  color: var(--mck-blue); margin-bottom: 8px;
+}
+h3, h4 { color: var(--mck-text); }
+.slide-subtitle {
+  font-size: 15px; color: var(--mck-text); margin-bottom: 36px;
+  font-weight: 400; padding-left: 14px;
+  border-left: 3px solid var(--mck-yellow);
+  line-height: 1.5;
+}
+
+/* ── BODY TEXT ──────────────────────────────── */
+p { font-size: 15px; color: var(--mck-text); margin-bottom: 14px; line-height: 1.65; }
+
+/* ── INSIGHT BULLETS ────────────────────────── */
+.insight-list {
+  list-style: none; display: flex; flex-direction: column; gap: 12px; margin: 20px 0;
+}
+.insight-list li {
+  display: flex; gap: 12px; align-items: flex-start;
+  font-size: 15px; color: var(--mck-text);
+  padding: 14px 16px; background: var(--mck-white);
+  border: 1px solid var(--mck-gray); border-left: 4px solid var(--mck-blue);
+}
+.insight-list li::before {
+  content: '▸'; color: var(--mck-blue); font-size: 13px; margin-top: 2px; flex-shrink: 0;
+}
+
+/* ── PROBLEM BULLETS ────────────────────────── */
+.problem-list {
+  list-style: none; display: flex; flex-direction: column; gap: 10px; margin: 20px 0;
+}
+.problem-list li {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 14px 16px; background: var(--mck-white);
+  border: 1px solid var(--mck-gray); border-left: 4px solid var(--mck-gray);
+  font-size: 15px; color: var(--mck-text); border-radius: 2px;
+}
+.problem-icon { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── PRINCIPLE / FRAMEWORK CARDS ───────────── */
+.principle-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0;
+}
+.p-card {
+  background: var(--mck-blue); color: white; padding: 22px;
+  border-radius: 2px; border-top: 4px solid var(--mck-yellow);
+}
+.p-card h4 {
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--mck-yellow); margin-bottom: 10px; font-weight: 700;
+}
+.p-card p { font-size: 14px; color: rgba(255,255,255,0.88); margin: 0; line-height: 1.6; }
+
+/* ── SEGMENT TABLE ──────────────────────────── */
+.seg-table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+.seg-table th {
+  background: var(--mck-blue); color: white; padding: 11px 14px; text-align: left;
+  font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+}
+.seg-table td {
+  padding: 13px 14px; border-bottom: 1px solid var(--mck-gray);
+  font-size: 14px; vertical-align: top; color: var(--mck-text);
+}
+.seg-table tr:nth-child(even) td { background: var(--mck-bg); }
+.seg-table tr:hover td { background: #EEF4FC; }
+.seg-badge {
+  display: inline-block; padding: 2px 9px; border-radius: 2px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px;
+}
+.badge-fin { background: #D6E8FF; color: var(--mck-blue); }
+.badge-hc  { background: #D4EDDA; color: #155724; }
+.badge-mfg { background: #FFF3CD; color: #856404; }
+.badge-ret { background: #F8D7E8; color: #6e1a3e; }
+.badge-it  { background: #E8E0F8; color: #3b1f82; }
+
+/* ── VENDOR GRID ────────────────────────────── */
+.vendor-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 24px 0;
+}
+.vendor-card {
+  border: 1px solid var(--mck-gray); border-radius: 2px; overflow: hidden;
+}
+.vendor-card-head {
+  padding: 10px 16px; font-size: 11px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+}
+.vch-llm  { background: var(--mck-blue);   color: white; }
+.vch-rag  { background: #004A93;            color: white; }
+.vch-mem  { background: #003F7F;            color: white; }
+.vch-obs  { background: var(--mck-yellow);  color: var(--mck-text); }
+.vendor-card-body { padding: 14px 16px; background: white; }
+.vendor-tag {
+  display: inline-block; background: var(--mck-bg); border: 1px solid var(--mck-gray);
+  border-radius: 2px; padding: 2px 9px; font-size: 12px; margin: 3px;
+  color: var(--mck-text); font-weight: 500;
+}
+.vendor-note {
+  font-size: 13px; color: var(--mck-text); margin-top: 10px; line-height: 1.55;
+}
+
+/* ── ARCH PATTERN CARDS ─────────────────────── */
+.arch-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 24px 0;
+}
+.arch-card {
+  background: white; border: 1px solid var(--mck-gray); border-radius: 2px;
+  padding: 20px; border-top: 4px solid var(--mck-blue);
+}
+.arch-card h4 { font-size: 15px; font-weight: 700; color: var(--mck-blue); margin-bottom: 8px; }
+.arch-card .arch-label {
+  font-size: 10px; color: var(--mck-gray); letter-spacing: 2px;
+  text-transform: uppercase; margin-bottom: 8px; display: block; font-weight: 600;
+}
+.arch-card p { font-size: 14px; color: var(--mck-text); margin: 0; line-height: 1.6; }
+
+/* ── RADAR / BAR CARDS ──────────────────────── */
+.radar-container {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 24px 0;
+}
+.radar-card {
+  background: var(--mck-blue); color: white; border-radius: 2px; padding: 18px;
+}
+.radar-card h5 {
+  font-size: 10px; color: var(--mck-yellow); letter-spacing: 1.5px;
+  text-transform: uppercase; margin-bottom: 14px; font-weight: 700;
+}
+.radar-bars { display: flex; flex-direction: column; gap: 8px; }
+.r-bar-row { display: flex; align-items: center; gap: 8px; }
+.r-label { font-size: 10px; color: rgba(255,255,255,0.65); width: 66px; flex-shrink: 0; }
+.r-track { flex: 1; height: 5px; background: rgba(255,255,255,0.15); border-radius: 2px; overflow: hidden; }
+.r-fill  { height: 100%; border-radius: 2px; background: var(--mck-yellow); }
+.radar-card p { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 12px; margin-bottom: 0; }
+
+/* ── CASE SNAPSHOT CARDS ────────────────────── */
+.case-stack { display: flex; flex-direction: column; gap: 18px; margin: 20px 0; }
+.case-card { background: white; border: 1px solid var(--mck-gray); border-radius: 2px; overflow: hidden; }
+.case-head { display: grid; grid-template-columns: 1fr 1fr; }
+.case-before, .case-after { padding: 16px 20px; }
+.case-before { background: #FFF8F0; border-right: 1px solid var(--mck-gray); }
+.case-after  { background: #F0F8FF; }
+.case-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 8px; display: block;
+}
+.case-before .case-label { color: #8B4000; }
+.case-after  .case-label { color: var(--mck-blue); }
+.case-text { font-size: 13px; color: var(--mck-text); line-height: 1.6; }
+.case-foot {
+  padding: 10px 20px; background: var(--mck-bg); border-top: 1px solid var(--mck-gray);
+  font-size: 12px; color: var(--mck-text); display: flex; align-items: center; gap: 10px;
+  font-weight: 500;
+}
+.case-tag { font-weight: 700; color: var(--mck-blue); }
+
+/* ── ROADMAP PHASES ─────────────────────────── */
+.roadmap {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin: 28px 0;
+  border-radius: 2px; overflow: hidden; border: 1px solid var(--mck-gray);
+}
+.phase { padding: 26px; }
+.phase-1 { background: var(--mck-bg); border-right: 1px solid var(--mck-gray); }
+.phase-2 { background: var(--mck-blue); color: white; border-right: 1px solid rgba(255,255,255,0.15); }
+.phase-3 { background: #003F7F; color: white; }
+.phase-num {
+  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+  margin-bottom: 5px; font-weight: 700;
+}
+.phase-1 .phase-num { color: var(--mck-blue); }
+.phase-2 .phase-num, .phase-3 .phase-num { color: var(--mck-yellow); }
+.phase h4 { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
+.phase-1 h4 { color: var(--mck-blue); }
+.phase-2 h4, .phase-3 h4 { color: white; }
+.phase ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.phase ul li {
+  font-size: 13px; line-height: 1.5; padding-left: 16px; position: relative;
+}
+.phase ul li::before { content: '→'; position: absolute; left: 0; }
+.phase-1 ul li { color: var(--mck-text); }
+.phase-1 ul li::before { color: var(--mck-blue); }
+.phase-2 ul li, .phase-3 ul li { color: rgba(255,255,255,0.85); }
+.phase-2 ul li::before, .phase-3 ul li::before { color: var(--mck-yellow); }
+
+/* ── IMPLEMENTATION PRINCIPLES ──────────────── */
+.impl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0; }
+.impl-card {
+  padding: 16px; background: white; border: 1px solid var(--mck-gray); border-radius: 2px;
+  border-left: 3px solid var(--mck-blue);
+}
+.impl-card h5 { font-size: 13px; font-weight: 700; color: var(--mck-blue); margin-bottom: 6px; }
+.impl-card p  { font-size: 13px; color: var(--mck-text); margin: 0; line-height: 1.55; }
+
+/* ── CHECKLIST ──────────────────────────────── */
+.checklist-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 0;
+}
+.check-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: white; border: 1px solid var(--mck-gray); border-radius: 2px; padding: 14px 16px;
+}
+.check-box {
+  width: 20px; height: 20px; border: 2px solid var(--mck-gray); border-radius: 2px;
+  flex-shrink: 0; margin-top: 2px; background: var(--mck-bg);
+}
+.check-text { font-size: 13px; color: var(--mck-text); line-height: 1.55; }
+
+/* ── STAT CALLOUT ROW ───────────────────────── */
+.stat-row { display: flex; gap: 16px; margin: 20px 0; }
+.stat-box {
+  flex: 1; background: var(--mck-blue); color: white; border-radius: 2px;
+  padding: 20px 18px; text-align: center;
+  border-bottom: 4px solid var(--mck-yellow);
+}
+.stat-num {
+  font-size: 36px; font-weight: 700; color: var(--mck-yellow);
+  line-height: 1; margin-bottom: 8px; letter-spacing: -0.5px;
+}
+.stat-label { font-size: 12px; color: rgba(255,255,255,0.75); line-height: 1.5; }
+
+/* ── SOURCE BAR ─────────────────────────────── */
+.source-bar {
+  background: var(--mck-bg); border: 1px solid var(--mck-gray); border-radius: 2px;
+  padding: 10px 14px; font-size: 11px; color: var(--mck-gray);
+  margin-top: 22px; font-family: "Courier New", Courier, monospace;
+}
+.source-bar strong { color: var(--mck-text); }
+
+/* ── DIVIDER / RULE ─────────────────────────── */
+.gold-rule {
+  height: 2px; background: linear-gradient(to right, var(--mck-yellow) 30%, transparent);
+  margin: 26px 0;
+}
+
+/* ── MATRIX / DIAGRAM WRAP ──────────────────── */
+.matrix-wrap {
+  background: white; border: 1px solid var(--mck-gray); border-radius: 2px;
+  padding: 20px; margin: 22px 0;
+}
+
+/* ── TITLE SLIDE ────────────────────────────── */
+section.title-slide { background: var(--mck-blue); }
+section.title-slide h1.deck-title { color: white; }
+section.title-slide .slide-subtitle {
+  color: rgba(255,255,255,0.8); border-left-color: var(--mck-yellow);
+}
+section.title-slide p { color: rgba(255,255,255,0.75); }
+section.title-slide .insight-list li {
+  background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2);
+  border-left-color: var(--mck-yellow); color: rgba(255,255,255,0.9);
+}
+section.title-slide .insight-list li::before { color: var(--mck-yellow); }
+section.title-slide .slide-meta {
+  border-bottom-color: rgba(255,255,255,0.25);
+}
+section.title-slide .slide-num { color: var(--mck-yellow); }
+section.title-slide .slide-tag { color: rgba(255,255,255,0.5); border-color: rgba(255,255,255,0.25); }
+section.title-slide .gold-rule { opacity: 0.35; }
+section.title-slide .audience-badges { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.aud-badge {
+  border: 1px solid rgba(243,193,58,0.5); border-radius: 2px;
+  padding: 4px 14px; font-size: 11px; color: rgba(255,255,255,0.7);
+  letter-spacing: 0.5px; font-weight: 600; text-transform: uppercase;
+  background: rgba(255,255,255,0.07);
+}
+
+/* ── HIGHLIGHT CALLOUT BOX ──────────────────── */
+.mck-highlight {
+  background: var(--mck-yellow); color: var(--mck-text);
+  border-radius: 2px; padding: 14px 18px; margin: 16px 0;
+  font-weight: 600; font-size: 14px;
+}
+
+/* ── PRINT ──────────────────────────────────── */
+@media print {
+  nav { display: none; }
+  body { background: white; }
+  section {
+    page-break-after: always; min-height: auto;
+    background: white !important; padding: 40px;
+  }
+  .slide-inner { max-width: 100%; }
+  h1.deck-title { color: var(--mck-blue) !important; }
+  section.title-slide { background: var(--mck-blue) !important; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">Context Window as a Scarce Resource — Enterprise LLM Architecture</span>
+  <div class="slide-pills">
+    <a href="#s1"  class="pill">1</a><a href="#s2"  class="pill">2</a>
+    <a href="#s3"  class="pill">3</a><a href="#s4"  class="pill">4</a>
+    <a href="#s5"  class="pill">5</a><a href="#s6"  class="pill">6</a>
+    <a href="#s7"  class="pill">7</a><a href="#s8"  class="pill">8</a>
+    <a href="#s9"  class="pill">9</a><a href="#s10" class="pill">10</a>
+  </div>
+</nav>
+
+<div class="deck">
+
+<!-- ════════════════════════════════════════════
+     SLIDE 1 — TITLE
+════════════════════════════════════════════ -->
+<section id="s1" class="title-slide">
+<div class="slide-inner">
+  <div class="slide-meta">
+    <span class="slide-num">01 / 10</span>
+    <span class="slide-tag">Strategic Overview</span>
+    <span class="slide-bar"></span>
+  </div>
+
+  <h1 class="deck-title">Context-Window as a<br>Scarce Resource</h1>
+  <p class="slide-subtitle">How Enterprises Are Designing Memory-First LLM Architectures</p>
+
+  <div class="audience-badges">
+    <span class="aud-badge">CIOs &amp; CTOs</span>
+    <span class="aud-badge">AI Program Leaders</span>
+    <span class="aud-badge">Enterprise Architects</span>
+    <span class="aud-badge">Regulated &amp; Data-Intensive Industries</span>
+  </div>
+
+  <div class="gold-rule" style="margin-top:28px;"></div>
+
+  <ul class="insight-list">
+    <li><strong>Context windows are fast RAM, not a database.</strong> Despite vendors advertising 1M–10M token windows, empirical benchmarks show effective reasoning degrades significantly beyond 30–60% of the stated maximum — and costs scale quadratically. Treating the context window as unlimited is the single costliest architectural mistake enterprises make today.</li>
+    <li><strong>The real trade-offs are strategic, not just technical.</strong> Every enterprise segment faces a different version of the same crisis: financial services risks compliance exposure, healthcare risks clinical error, manufacturing risks signal-to-noise collapse, and retail risks cost blowout — all from the same root cause: unmanaged context.</li>
+    <li><strong>The answer is memory-first, vendor-agile stacks with deliberate context budgeting.</strong> Enterprises that separate short-term "fast RAM" prompts from long-term memory layers (vector, graph, KV-cache) are outperforming peers on cost, latency, and regulatory defensibility. This deck shows how.</li>
+  </ul>
+
+  <div class="gold-rule"></div>
+
+  <!-- 2×2 Matrix -->
+  <div class="matrix-wrap" style="background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.15);">
+    <svg viewBox="0 0 740 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:740px;display:block;margin:0 auto;">
+      <!-- Axes -->
+      <line x1="80" y1="340" x2="700" y2="340" stroke="#F3C13A" stroke-width="2"/>
+      <line x1="80" y1="340" x2="80"  y2="20"  stroke="#F3C13A" stroke-width="2"/>
+      <!-- Quadrant lines -->
+      <line x1="390" y1="20"  x2="390" y2="340" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="5,4"/>
+      <line x1="80"  y1="180" x2="700" y2="180" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="5,4"/>
+      <!-- Axis labels -->
+      <text x="390" y="370" text-anchor="middle" fill="#F3C13A" font-size="12" font-family="Segoe UI, sans-serif" font-weight="600" letter-spacing="1">CONTEXT WINDOW SIZE  →  HIGH</text>
+      <text x="160" y="374" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="11" font-family="Segoe UI, sans-serif">LOW</text>
+      <text x="700" y="374" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="11" font-family="Segoe UI, sans-serif">HIGH</text>
+      <text x="28" y="180" text-anchor="middle" fill="#F3C13A" font-size="12" font-family="Segoe UI, sans-serif" font-weight="600" transform="rotate(-90,28,180)" letter-spacing="1">MATURITY  →</text>
+      <text x="60" y="340" text-anchor="end" fill="rgba(255,255,255,0.4)" font-size="11" font-family="Segoe UI, sans-serif">BASIC</text>
+      <text x="60" y="30"  text-anchor="end" fill="rgba(255,255,255,0.4)" font-size="11" font-family="Segoe UI, sans-serif">ADV.</text>
+      <!-- Q1: Bottom-left -->
+      <rect x="90" y="190" width="290" height="140" fill="rgba(255,255,255,0.04)" rx="2"/>
+      <text x="100" y="212" fill="#F3C13A" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">RETAIL</text>
+      <text x="100" y="228" fill="rgba(255,255,255,0.55)" font-size="11" font-family="Segoe UI, sans-serif">High-throughput support</text>
+      <text x="100" y="244" fill="rgba(255,255,255,0.55)" font-size="11" font-family="Segoe UI, sans-serif">Small context, high volume</text>
+      <text x="100" y="264" fill="#F3C13A" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">MANUFACTURING</text>
+      <text x="100" y="280" fill="rgba(255,255,255,0.55)" font-size="11" font-family="Segoe UI, sans-serif">Multi-system ops, SOP retrieval</text>
+      <!-- Q2: Bottom-right -->
+      <rect x="400" y="190" width="290" height="140" fill="rgba(255,255,255,0.04)" rx="2"/>
+      <text x="412" y="212" fill="#7EC8E3" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">IT / TECH</text>
+      <text x="412" y="228" fill="rgba(255,255,255,0.55)" font-size="11" font-family="Segoe UI, sans-serif">Large codebases, rich context</text>
+      <text x="412" y="244" fill="rgba(255,255,255,0.55)" font-size="11" font-family="Segoe UI, sans-serif">Cost vs. quality trade-off</text>
+      <!-- Q3: Top-left -->
+      <rect x="90" y="30" width="290" height="140" fill="rgba(255,255,255,0.04)" rx="2"/>
+      <text x="100" y="52" fill="#A8D8EA" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">HEALTHCARE</text>
+      <text x="100" y="68" fill="rgba(255,255,255,0.55)" font-size="11" font-family="Segoe UI, sans-serif">Regulated reasoning, small window</text>
+      <text x="100" y="84" fill="rgba(255,255,255,0.55)" font-size="11" font-family="Segoe UI, sans-serif">Auditability is non-negotiable</text>
+      <!-- Q4: Top-right — SWEET SPOT -->
+      <rect x="400" y="30" width="290" height="140" fill="rgba(243,193,58,0.08)" rx="2"/>
+      <circle cx="545" cy="100" r="40" fill="none" stroke="#F3C13A" stroke-width="1.5" stroke-dasharray="5,3"/>
+      <text x="545" y="86"  text-anchor="middle" fill="#F3C13A" font-size="10" font-family="Segoe UI, sans-serif" font-weight="700" letter-spacing="1">SWEET SPOT</text>
+      <text x="545" y="104" text-anchor="middle" fill="white" font-size="13" font-weight="bold" font-family="Segoe UI, sans-serif">FINANCE</text>
+      <text x="545" y="120" text-anchor="middle" fill="rgba(255,255,255,0.65)" font-size="11" font-family="Segoe UI, sans-serif">High fidelity + compliance</text>
+    </svg>
+  </div>
+
+  <p style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:6px;">
+    Exhibit 1 — Segment positioning by context window size vs. enterprise AI maturity. Finance sits in the "sweet spot" demand zone — high capability need with high regulatory constraint.
+  </p>
+</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 2 — THE PROBLEM
+════════════════════════════════════════════ -->
+<section id="s2">
+<div class="slide-inner">
+  <div class="slide-meta">
+    <span class="slide-num">02 / 10</span>
+    <span class="slide-tag">Core Message #1 — Strategic Risk</span>
+    <span class="slide-bar"></span>
+  </div>
+  <h2 class="slide-title">Where Enterprises Are Getting Burned</h2>
+  <p class="slide-subtitle">The context window problem is not theoretical. It is showing up in production costs, compliance audits, and user trust failures right now.</p>
+
+  <div class="stat-row">
+    <div class="stat-box">
+      <div class="stat-num">4×</div>
+      <div class="stat-label">Compute cost multiplier from doubling context length (quadratic O(n²) scaling in transformer attention)</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">30–60%</div>
+      <div class="stat-label">Effective context cap — empirical recall degrades significantly before the advertised token maximum</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">40%</div>
+      <div class="stat-label">Context degradation at scale — "Lost in the Middle" effect documented across GPT-4, Claude, and frontier models</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">30%</div>
+      <div class="stat-label">GenAI PoCs abandoned post-pilot by end of 2025, per Gartner — cost overruns and governance gaps cited</div>
+    </div>
+  </div>
+
+  <ul class="problem-list">
+    <li>
+      <span class="problem-icon">⚡</span>
+      <div><strong>Latency and throughput degradation.</strong> Prefill latency can exceed 2 minutes at maximum context lengths. Models processing 100K+ tokens routinely see multi-second slowdowns, breaking real-time SLAs in support, trading, and clinical workflows. Each token is sequential compute — the cost compounds with every prompt.</div>
+    </li>
+    <li>
+      <span class="problem-icon">💸</span>
+      <div><strong>Token cost spirals at production scale.</strong> A 20-turn conversation accumulates 5,000–10,000 tokens when only 500–1,000 of recent context would suffice. At production volume, inefficient context use compounds exponentially. Token pricing is linear but waste is multiplicative — one poorly scoped prompt repeated 10,000 times is a budget crisis.</div>
+    </li>
+    <li>
+      <span class="problem-icon">🌫️</span>
+      <div><strong>Reasoning dilution — "context rot" and the lost-in-the-middle effect.</strong> Research (Liu et al., TACL 2024) shows model accuracy drops to below 50% for facts buried in the middle of long documents, forming a U-shaped recall curve. Enterprises stuffing contracts, SOPs, or clinical notes into a single prompt are not getting better reasoning — they are getting noisier reasoning at higher cost.</div>
+    </li>
+    <li>
+      <span class="problem-icon">🔒</span>
+      <div><strong>Compliance and governance exposure.</strong> In regulated industries, the prompt is a data artifact. LLMs do not distinguish between legitimate and adversarial instructions. OWASP LLM08:2025 formally recognizes vector and embedding weaknesses as top-10 LLM risks. 1 in 12 employee prompts is estimated to contain confidential data when public models are used unsanctioned — "shadow AI" is a growing compliance blind spot.</div>
+    </li>
+    <li>
+      <span class="problem-icon">🐛</span>
+      <div><strong>Debugging and version-control blackouts.</strong> Long, unstructured prompts are notoriously hard to test and version. When model behavior changes — due to a provider update, a prompt drift, or a schema change — teams cannot isolate the root cause. 40% of enterprise RAG deployments still shipped without a quality baseline in early 2025, discovering failure modes in production.</div>
+    </li>
+    <li>
+      <span class="problem-icon">🔀</span>
+      <div><strong>Vendor lock-in amplified by poor architecture.</strong> When prompt templates tightly couple business logic to a specific model's token limits, context format, or API shape, switching costs become prohibitive. Architecture built around "stuff it all in the context" is architecturally brittle and commercially vulnerable.</div>
+    </li>
+  </ul>
+
+  <!-- Problem Landscape SVG -->
+  <div class="matrix-wrap">
+    <svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:760px;display:block;margin:0 auto;">
+      <!-- Central box -->
+      <rect x="270" y="90" width="220" height="80" rx="2" fill="#005EB8" stroke="#F3C13A" stroke-width="1.5"/>
+      <text x="380" y="122" text-anchor="middle" fill="white" font-size="13" font-weight="bold" font-family="Segoe UI, sans-serif">LLM Context Window</text>
+      <text x="380" y="140" text-anchor="middle" fill="#F3C13A" font-size="11" font-family="Segoe UI, sans-serif">(Short-Term RAM)</text>
+      <!-- Inflow arrows -->
+      <line x1="120" y1="55"  x2="270" y2="110" stroke="#A2AAAD" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="120" y1="130" x2="270" y2="130" stroke="#A2AAAD" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="120" y1="200" x2="270" y2="150" stroke="#A2AAAD" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="380" y1="30"  x2="380" y2="90"  stroke="#A2AAAD" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="380" y1="230" x2="380" y2="170" stroke="#A2AAAD" stroke-width="1.5" marker-end="url(#arr)"/>
+      <!-- Inflow labels -->
+      <text x="30"  y="52"  fill="#222222" font-size="12" font-family="Segoe UI, sans-serif">Conversation history</text>
+      <text x="30"  y="134" fill="#222222" font-size="12" font-family="Segoe UI, sans-serif">Long documents / contracts</text>
+      <text x="30"  y="204" fill="#222222" font-size="12" font-family="Segoe UI, sans-serif">Codebases / SOPs</text>
+      <text x="330" y="24"  fill="#222222" font-size="12" font-family="Segoe UI, sans-serif">Tool outputs</text>
+      <text x="290" y="250" fill="#222222" font-size="12" font-family="Segoe UI, sans-serif">Instructions &amp; schemas</text>
+      <!-- Pain mode bubbles -->
+      <rect x="510" y="20"  width="130" height="36" rx="2" fill="#FFF0F0" stroke="#A2AAAD"/>
+      <text x="575" y="36"  text-anchor="middle" fill="#222222" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">High Latency</text>
+      <text x="575" y="50"  text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">2+ min prefill</text>
+      <rect x="510" y="74"  width="130" height="36" rx="2" fill="#FFF8E8" stroke="#A2AAAD"/>
+      <text x="575" y="90"  text-anchor="middle" fill="#222222" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">Cost Spike</text>
+      <text x="575" y="104" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">O(n²) token costs</text>
+      <rect x="510" y="128" width="130" height="36" rx="2" fill="#FFFBEA" stroke="#F3C13A" stroke-width="1.5"/>
+      <text x="575" y="144" text-anchor="middle" fill="#222222" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">Reasoning Drift</text>
+      <text x="575" y="158" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">Lost-in-middle &lt;50%</text>
+      <rect x="510" y="182" width="130" height="36" rx="2" fill="#F0F5FF" stroke="#A2AAAD"/>
+      <text x="575" y="198" text-anchor="middle" fill="#222222" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">Debug Blackout</text>
+      <text x="575" y="212" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">No trace, no version</text>
+      <rect x="510" y="236" width="130" height="36" rx="2" fill="#F0F5FF" stroke="#A2AAAD"/>
+      <text x="575" y="252" text-anchor="middle" fill="#222222" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">Compliance Risk</text>
+      <text x="575" y="266" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">PHI / PII exposure</text>
+      <!-- Arrows to pain -->
+      <line x1="490" y1="38"  x2="510" y2="38"  stroke="#005EB8" stroke-width="1.5" marker-end="url(#arre)"/>
+      <line x1="490" y1="92"  x2="510" y2="92"  stroke="#005EB8" stroke-width="1.5" marker-end="url(#arre)"/>
+      <line x1="490" y1="146" x2="510" y2="146" stroke="#F3C13A" stroke-width="2"   marker-end="url(#arrh)"/>
+      <line x1="490" y1="200" x2="510" y2="200" stroke="#005EB8" stroke-width="1.5" marker-end="url(#arre)"/>
+      <line x1="490" y1="254" x2="510" y2="254" stroke="#005EB8" stroke-width="1.5" marker-end="url(#arre)"/>
+      <!-- Arrow markers -->
+      <defs>
+        <marker id="arr"  markerWidth="8" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#A2AAAD"/></marker>
+        <marker id="arre" markerWidth="8" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#005EB8"/></marker>
+        <marker id="arrh" markerWidth="8" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#F3C13A"/></marker>
+      </defs>
+    </svg>
+  </div>
+  <p style="font-size:12px;color:var(--mck-gray);margin-top:4px;">Exhibit 2 — Context window as a convergence point for all enterprise data streams, with five documented failure modes radiating outward. Yellow highlight = highest-impact failure mode for enterprise.</p>
+</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 3 — PRINCIPLE
+════════════════════════════════════════════ -->
+<section id="s3">
+<div class="slide-inner">
+  <div class="slide-meta">
+    <span class="slide-num">03 / 10</span>
+    <span class="slide-tag">Core Message #2 — Architectural Principle</span>
+    <span class="slide-bar"></span>
+  </div>
+  <h2 class="slide-title">Context as a Scarce, Managed Resource</h2>
+  <p class="slide-subtitle">The architectural shift: stop treating the context window as a data container. Treat it as fast RAM — where only the most relevant tokens for the current step live.</p>
+
+  <p>Andrej Karpathy (ex-OpenAI) has called context management <em>"the delicate art and science of filling the context window with just the right information."</em> For enterprise architects, this is not an art — it is a discipline with measurable levers: cost, latency, accuracy, and auditability. The emerging term is <strong>context engineering</strong>: the systematic design of what enters a prompt, in what form, and when.</p>
+
+  <div class="principle-grid">
+    <div class="p-card">
+      <h4>Principle 1</h4>
+      <p>The context window is fast RAM. Everything else lives in a persistent memory layer. No data should live in a prompt that is not needed for this exact inference step.</p>
+    </div>
+    <div class="p-card">
+      <h4>Principle 2</h4>
+      <p>Every LLM call must have one clearly scoped job. Multi-task prompts dilute attention and make failure modes impossible to isolate. One job = one context budget = one accountable output.</p>
+    </div>
+    <div class="p-card">
+      <h4>Principle 3</h4>
+      <p>Context is curated before every call — selected, compressed, and pruned. Retrieval, summarization, and relevance filtering are first-class architectural components, not afterthoughts.</p>
+    </div>
+  </div>
+
+  <div class="gold-rule"></div>
+
+  <p><strong>What this changes across the enterprise stack:</strong></p>
+  <ul class="insight-list">
+    <li><strong>Prompt design:</strong> Small, focused, task-specific prompts. System instructions are stable and versioned. Retrieved context is filtered to the top-k most relevant chunks, not the full document. Conversation history is summarized or truncated, not appended verbatim.</li>
+    <li><strong>Architecture:</strong> State is pushed into a memory layer (vector DB, graph, KV-cache, session store), not into prompts. The LLM is the CPU; memory infrastructure is the storage tier. Agents orchestrate reads and writes explicitly.</li>
+    <li><strong>Governance:</strong> Token budgets are defined per workflow, per user, and per product. Trigger rules determine when memory is read vs. written. Observability pipelines trace every token consumed, every retrieval made, every memory updated.</li>
+  </ul>
+
+  <!-- Two-layer Architecture SVG -->
+  <div class="matrix-wrap" style="margin-top:24px;">
+    <svg viewBox="0 0 760 310" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:760px;display:block;margin:0 auto;">
+      <defs>
+        <marker id="ma" markerWidth="8" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#F3C13A"/></marker>
+        <marker id="mb" markerWidth="8" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#A2AAAD"/></marker>
+      </defs>
+      <!-- Top layer header -->
+      <rect x="20" y="10" width="720" height="128" rx="2" fill="#005EB8" stroke="#F3C13A" stroke-width="1.5"/>
+      <text x="40" y="34" fill="#F3C13A" font-size="11" font-weight="bold" font-family="Segoe UI, sans-serif" letter-spacing="2">LLM CONTEXT WINDOW — SHORT-TERM RAM</text>
+      <!-- Top layer items -->
+      <rect x="36"  y="44" width="155" height="82" rx="2" fill="rgba(255,255,255,0.08)" stroke="rgba(243,193,58,0.4)"/>
+      <text x="113" y="80"  text-anchor="middle" fill="white" font-size="13" font-weight="bold" font-family="Segoe UI, sans-serif">Current Query</text>
+      <text x="113" y="96"  text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="11" font-family="Segoe UI, sans-serif">User intent,</text>
+      <text x="113" y="110" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="11" font-family="Segoe UI, sans-serif">task goal</text>
+      <rect x="205" y="44" width="155" height="82" rx="2" fill="rgba(255,255,255,0.08)" stroke="rgba(243,193,58,0.4)"/>
+      <text x="282" y="80"  text-anchor="middle" fill="white" font-size="13" font-weight="bold" font-family="Segoe UI, sans-serif">Immediate Plan</text>
+      <text x="282" y="96"  text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="11" font-family="Segoe UI, sans-serif">Next step only,</text>
+      <text x="282" y="110" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="11" font-family="Segoe UI, sans-serif">scoped action</text>
+      <rect x="374" y="44" width="155" height="82" rx="2" fill="rgba(255,255,255,0.08)" stroke="rgba(243,193,58,0.4)"/>
+      <text x="451" y="80"  text-anchor="middle" fill="white" font-size="13" font-weight="bold" font-family="Segoe UI, sans-serif">RAG Snippets</text>
+      <text x="451" y="96"  text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="11" font-family="Segoe UI, sans-serif">Top-k relevant</text>
+      <text x="451" y="110" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="11" font-family="Segoe UI, sans-serif">chunks only</text>
+      <rect x="543" y="44" width="175" height="82" rx="2" fill="rgba(255,255,255,0.08)" stroke="rgba(243,193,58,0.4)"/>
+      <text x="630" y="80"  text-anchor="middle" fill="white" font-size="13" font-weight="bold" font-family="Segoe UI, sans-serif">Tool Output</text>
+      <text x="630" y="96"  text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="11" font-family="Segoe UI, sans-serif">Compact result,</text>
+      <text x="630" y="110" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="11" font-family="Segoe UI, sans-serif">not full payload</text>
+      <!-- Arrows between layers -->
+      <line x1="250" y1="152" x2="250" y2="172" stroke="#F3C13A" stroke-width="2" marker-end="url(#ma)"/>
+      <text x="148" y="166" fill="#F3C13A" font-size="11" font-family="Segoe UI, sans-serif" font-weight="600">READ MEMORY</text>
+      <line x1="510" y1="172" x2="510" y2="152" stroke="#A2AAAD" stroke-width="2" marker-end="url(#mb)"/>
+      <text x="516" y="166" fill="#A2AAAD" font-size="11" font-family="Segoe UI, sans-serif" font-weight="600">WRITE MEMORY</text>
+      <!-- Bottom layer -->
+      <rect x="20" y="182" width="720" height="118" rx="2" fill="#F5F5F5" stroke="#A2AAAD" stroke-width="1.5"/>
+      <text x="40" y="204" fill="#005EB8" font-size="11" font-weight="bold" font-family="Segoe UI, sans-serif" letter-spacing="2">MEMORY LAYER — PERSISTENT STORAGE</text>
+      <rect x="36"  y="212" width="155" height="76" rx="2" fill="white" stroke="#A2AAAD"/>
+      <text x="113" y="245" text-anchor="middle" fill="#005EB8" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">Vector DB</text>
+      <text x="113" y="262" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">Pinecone, Weaviate, Redis</text>
+      <rect x="205" y="212" width="155" height="76" rx="2" fill="white" stroke="#A2AAAD"/>
+      <text x="282" y="245" text-anchor="middle" fill="#005EB8" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">Structured DB</text>
+      <text x="282" y="262" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">Sessions, user profiles</text>
+      <rect x="374" y="212" width="155" height="76" rx="2" fill="white" stroke="#A2AAAD"/>
+      <text x="451" y="245" text-anchor="middle" fill="#005EB8" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">Knowledge Graph</text>
+      <text x="451" y="262" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">Entities, temporal relations</text>
+      <rect x="543" y="212" width="175" height="76" rx="2" fill="white" stroke="#A2AAAD"/>
+      <text x="630" y="245" text-anchor="middle" fill="#005EB8" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">Mem0 / Zep / Letta</text>
+      <text x="630" y="262" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">Managed memory platform</text>
+    </svg>
+  </div>
+  <p style="font-size:12px;color:var(--mck-gray);margin-top:4px;">Exhibit 3 — Two-layer memory architecture. The context window (top) holds only what is needed for this inference step. The memory layer (bottom) holds everything else — persistently, searchably, and auditably.</p>
+</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 4 — ENTERPRISE SEGMENTS
+════════════════════════════════════════════ -->
+<section id="s4">
+<div class="slide-inner">
+  <div class="slide-meta">
+    <span class="slide-num">04 / 10</span>
+    <span class="slide-tag">Segment Intelligence</span>
+    <span class="slide-bar"></span>
+  </div>
+  <h2 class="slide-title">Enterprise Segments and Their Critical Zone</h2>
+  <p class="slide-subtitle">Each sector faces the same context-window constraint — but the failure mode, risk profile, and architectural priority differ materially.</p>
+
+  <table class="seg-table">
+    <thead>
+      <tr>
+        <th>Segment</th>
+        <th>Context Challenge</th>
+        <th>Failure Mode</th>
+        <th>Critical Zone</th>
+        <th>Architecture Priority</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="seg-badge badge-fin">Financial Services</span></td>
+        <td>Long contracts, compliance docs, trading rationale across multi-turn analyst sessions</td>
+        <td>Context rot in compliance review; PII/confidential data in prompts; unauditable reasoning chains</td>
+        <td><strong>Fidelity + Auditability</strong></td>
+        <td>MemGPT-style paged memory; strict token budgets; full audit trail per inference</td>
+      </tr>
+      <tr>
+        <td><span class="seg-badge badge-hc">Healthcare</span></td>
+        <td>Clinical notes, EHR-adjacent reasoning, regulatory text (HIPAA, FDA) across patient sessions</td>
+        <td>"Lost in the middle" for clinical details; HIPAA exposure from prompt content; no traceable reasoning for audit</td>
+        <td><strong>Safety + Traceability</strong></td>
+        <td>Small scoped prompts; on-premise or private cloud LLMs; versioned memory schemas</td>
+      </tr>
+      <tr>
+        <td><span class="seg-badge badge-mfg">Manufacturing / Logistics</span></td>
+        <td>SOPs, multi-system operational logs, equipment sensor streams — high data volume, low signal density</td>
+        <td>Signal-to-noise collapse in large contexts; tool output bloat from multi-system calls; brittle agentic workflows</td>
+        <td><strong>Reliability + Observability</strong></td>
+        <td>Agent-with-memory; compact tool outputs; structured DB for operational state</td>
+      </tr>
+      <tr>
+        <td><span class="seg-badge badge-ret">Retail / Digital Commerce</span></td>
+        <td>Product catalogs, support history, personalization — high concurrency, low-latency requirement</td>
+        <td>Token cost spikes at volume; stale context from shared sessions; context windows too small for full catalog</td>
+        <td><strong>Throughput + Cost Efficiency</strong></td>
+        <td>Slim-prompt + RAG; semantic caching; memory for user preference across sessions</td>
+      </tr>
+      <tr>
+        <td><span class="seg-badge badge-it">IT / Tech</span></td>
+        <td>Large codebases, internal docs, engineering tooling — context at scale for complex, cross-file reasoning</td>
+        <td>Context bloat from MCP tool definitions; irrelevant rules inflating context; latency breaking dev workflow</td>
+        <td><strong>Precision + Developer Experience</strong></td>
+        <td>Hybrid memory; targeted file-level retrieval; aggressive context pruning per task</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 2×2 Matrix for segments -->
+  <div class="matrix-wrap">
+    <svg viewBox="0 0 680 360" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:680px;display:block;margin:0 auto;">
+      <line x1="80" y1="320" x2="660" y2="320" stroke="#222222" stroke-width="1.5"/>
+      <line x1="80" y1="320" x2="80"  y2="20"  stroke="#222222" stroke-width="1.5"/>
+      <line x1="370" y1="20"  x2="370" y2="320" stroke="#A2AAAD" stroke-width="1" stroke-dasharray="5,4"/>
+      <line x1="80"  y1="170" x2="660" y2="170" stroke="#A2AAAD" stroke-width="1" stroke-dasharray="5,4"/>
+      <text x="370" y="345" text-anchor="middle" fill="#222222" font-size="12" font-family="Segoe UI, sans-serif" font-weight="600">DATA HETEROGENEITY  →  UNSTRUCTURED</text>
+      <text x="148" y="348" fill="#A2AAAD" font-size="11" font-family="Segoe UI, sans-serif">STRUCTURED</text>
+      <text x="28" y="170" text-anchor="middle" fill="#222222" font-size="12" font-family="Segoe UI, sans-serif" font-weight="600" transform="rotate(-90,28,170)">REGULATORY RISK  →  HIGH</text>
+      <!-- Q labels -->
+      <text x="90"  y="40"  fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">HIGH REG / STRUCTURED</text>
+      <text x="380" y="40"  fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">HIGH REG / UNSTRUCTURED</text>
+      <text x="90"  y="192" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">LOW REG / STRUCTURED</text>
+      <text x="380" y="192" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">LOW REG / UNSTRUCTURED</text>
+      <!-- Finance -->
+      <circle cx="200" cy="90" r="42" fill="#D6E8FF" stroke="#005EB8" stroke-width="2"/>
+      <text x="200" y="86"  text-anchor="middle" fill="#005EB8" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">Finance</text>
+      <text x="200" y="100" text-anchor="middle" fill="#005EB8" font-size="10" font-family="Segoe UI, sans-serif">Fidelity +</text>
+      <text x="200" y="112" text-anchor="middle" fill="#005EB8" font-size="10" font-family="Segoe UI, sans-serif">Compliance</text>
+      <!-- Healthcare -->
+      <circle cx="490" cy="100" r="42" fill="#D4EDDA" stroke="#155724" stroke-width="2"/>
+      <text x="490" y="96"  text-anchor="middle" fill="#155724" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">Healthcare</text>
+      <text x="490" y="110" text-anchor="middle" fill="#155724" font-size="10" font-family="Segoe UI, sans-serif">Safety +</text>
+      <text x="490" y="122" text-anchor="middle" fill="#155724" font-size="10" font-family="Segoe UI, sans-serif">Traceability</text>
+      <!-- IT Tech -->
+      <circle cx="200" cy="262" r="38" fill="#F5F5F5" stroke="#A2AAAD" stroke-width="2"/>
+      <text x="200" y="258" text-anchor="middle" fill="#222222" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">IT / Tech</text>
+      <text x="200" y="274" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">Precision + DX</text>
+      <!-- Retail -->
+      <circle cx="530" cy="255" r="38" fill="#F5F5F5" stroke="#A2AAAD" stroke-width="2"/>
+      <text x="530" y="251" text-anchor="middle" fill="#222222" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">Retail</text>
+      <text x="530" y="267" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">Throughput + Cost</text>
+      <!-- Manufacturing — highlighted in yellow as key callout -->
+      <circle cx="360" cy="230" r="36" fill="#FFFBEA" stroke="#F3C13A" stroke-width="2.5"/>
+      <text x="360" y="226" text-anchor="middle" fill="#222222" font-size="11" font-weight="bold" font-family="Segoe UI, sans-serif">Mfg / Ops</text>
+      <text x="360" y="240" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">Reliability</text>
+    </svg>
+  </div>
+  <p style="font-size:12px;color:var(--mck-gray);margin-top:4px;">Exhibit 4 — Segment positioning by data heterogeneity and regulatory risk. Finance and healthcare occupy the high-risk, divergent-data zones that demand the most rigorous memory-first architecture.</p>
+</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 5 — VENDOR LANDSCAPE
+════════════════════════════════════════════ -->
+<section id="s5">
+<div class="slide-inner">
+  <div class="slide-meta">
+    <span class="slide-num">05 / 10</span>
+    <span class="slide-tag">Core Message #3 — Ecosystem Choices</span>
+    <span class="slide-bar"></span>
+  </div>
+  <h2 class="slide-title">Vendor Landscape: The Ecosystem Shaping Architecture</h2>
+  <p class="slide-subtitle">Vendor selection is an architectural decision, not a procurement one. The memory layer you choose today determines your cost curve, switching cost, and governance posture for years.</p>
+
+  <div class="vendor-grid">
+    <div class="vendor-card">
+      <div class="vendor-card-head vch-llm">01 — Core LLM Providers</div>
+      <div class="vendor-card-body">
+        <div>
+          <span class="vendor-tag">OpenAI GPT-4.1 (1M tokens)</span>
+          <span class="vendor-tag">Anthropic Claude 4 (200K–1M)</span>
+          <span class="vendor-tag">Google Gemini 2.5 Pro (2M)</span>
+          <span class="vendor-tag">Meta Llama 4 Scout (10M)</span>
+          <span class="vendor-tag">Azure OpenAI Service</span>
+          <span class="vendor-tag">AWS Bedrock</span>
+          <span class="vendor-tag">Google Vertex AI</span>
+        </div>
+        <p class="vendor-note"><strong>Architect's view:</strong> Larger windows do not equal better performance. Effective context (the range before reasoning degrades) is 60–120K tokens for Claude Sonnet, ~200K for GPT-5/Gemini 2.5 Pro. Design to <em>effective</em> window, not advertised maximum. For regulated industries: private cloud deployments (Azure OpenAI, Bedrock) are non-negotiable — public API routing of PHI or trade data carries GDPR, HIPAA, and FCA exposure.</p>
+      </div>
+    </div>
+
+    <div class="vendor-card">
+      <div class="vendor-card-head vch-rag">02 — Vector / RAG Platforms</div>
+      <div class="vendor-card-body">
+        <div>
+          <span class="vendor-tag">Pinecone</span>
+          <span class="vendor-tag">Weaviate</span>
+          <span class="vendor-tag">Redis Vector (9.5× faster QPS)</span>
+          <span class="vendor-tag">Azure AI Search</span>
+          <span class="vendor-tag">Elasticsearch / OpenSearch</span>
+          <span class="vendor-tag">FAISS (self-hosted)</span>
+          <span class="vendor-tag">LlamaIndex (+35% retrieval acc.)</span>
+          <span class="vendor-tag">LangChain / LangGraph</span>
+        </div>
+        <p class="vendor-note"><strong>Architect's view:</strong> Hybrid search (vector + BM25 keyword) is now the baseline for production — it delivers 15–30% better retrieval accuracy than pure vector search. Reranking (Cohere Rerank, ColBERT) adds 20–35% on ambiguous queries. Your vector DB is a sensitive data store — apply the same encryption, access logging, and RBAC as your source documents. Embedding inversion attacks can recover 50–70% of original input words.</p>
+      </div>
+    </div>
+
+    <div class="vendor-card">
+      <div class="vendor-card-head vch-mem">03 — Memory-Infrastructure Platforms</div>
+      <div class="vendor-card-body">
+        <div>
+          <span class="vendor-tag">Mem0 (+26% accuracy, 91% faster)</span>
+          <span class="vendor-tag">Zep (temporal knowledge graph)</span>
+          <span class="vendor-tag">LangMem (LangChain-native)</span>
+          <span class="vendor-tag">Letta / MemGPT (UC Berkeley)</span>
+          <span class="vendor-tag">IBM watsonx Memory (enterprise)</span>
+          <span class="vendor-tag">Redis Agent Memory Server</span>
+        </div>
+        <p class="vendor-note"><strong>Architect's view:</strong> Benchmarks on LOCOMO dataset (26K-token, 600-dialogue conversations): Mem0 achieves 26% higher accuracy and 91% lower p95 latency vs. full-context baseline, with 90% lower token consumption. Zep leads on open-domain queries and temporal reasoning. LangMem is tightly LangChain-coupled — not ideal for multi-framework stacks. Decouple your memory schema from your memory vendor for long-term agility.</p>
+      </div>
+    </div>
+
+    <div class="vendor-card">
+      <div class="vendor-card-head vch-obs">04 — Observability &amp; Governance</div>
+      <div class="vendor-card-body">
+        <div>
+          <span class="vendor-tag">LangSmith (LangChain)</span>
+          <span class="vendor-tag">Atlan (context lineage)</span>
+          <span class="vendor-tag">16x Eval (effective context testing)</span>
+          <span class="vendor-tag">Lasso Security (prompt/output filtering)</span>
+          <span class="vendor-tag">TrueFoundry (token budgeting)</span>
+          <span class="vendor-tag">DeepEval / RAGFlow (RAG eval)</span>
+          <span class="vendor-tag">Prometheus / Grafana (custom)</span>
+        </div>
+        <p class="vendor-note"><strong>Architect's view:</strong> 60% of RAG deployments now include systematic evaluation from day 1 (up from &lt;30% in 2025). The 40% that don't discover failure modes in production. Governance tools must enforce controls inside the pipeline — at the prompt→model→output layers — not just in static policy documents. OWASP LLM08:2025: vector DB exposure is a top-10 LLM risk.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Landscape Map SVG -->
+  <div class="matrix-wrap" style="margin-top:8px;">
+    <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:720px;display:block;margin:0 auto;">
+      <defs><marker id="lma" markerWidth="7" markerHeight="7" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#005EB8"/></marker></defs>
+      <!-- Center -->
+      <rect x="280" y="100" width="160" height="70" rx="2" fill="#005EB8" stroke="#F3C13A" stroke-width="2"/>
+      <text x="360" y="131" text-anchor="middle" fill="white" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">Enterprise LLM</text>
+      <text x="360" y="148" text-anchor="middle" fill="#F3C13A" font-size="11" font-family="Segoe UI, sans-serif">Application</text>
+      <!-- Four quadrant boxes -->
+      <rect x="20"  y="10"  width="185" height="62" rx="2" fill="#D6E8FF" stroke="#005EB8"/>
+      <text x="112" y="38"  text-anchor="middle" fill="#005EB8" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">LLM Providers</text>
+      <text x="112" y="56"  text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">Context window &amp; inference</text>
+      <rect x="515" y="10"  width="190" height="62" rx="2" fill="#D4EDDA" stroke="#A2AAAD"/>
+      <text x="610" y="38"  text-anchor="middle" fill="#222222" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">Vector / RAG</text>
+      <text x="610" y="56"  text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">Semantic retrieval</text>
+      <rect x="20"  y="200" width="185" height="62" rx="2" fill="#F5F5F5" stroke="#A2AAAD"/>
+      <text x="112" y="228" text-anchor="middle" fill="#222222" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">Memory-Infra</text>
+      <text x="112" y="246" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">Persistent memory</text>
+      <rect x="515" y="200" width="190" height="62" rx="2" fill="#FFFBEA" stroke="#F3C13A" stroke-width="1.5"/>
+      <text x="610" y="228" text-anchor="middle" fill="#222222" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">Observability</text>
+      <text x="610" y="246" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">Metrics, budget, drift</text>
+      <!-- Arrows -->
+      <line x1="205" y1="41"  x2="280" y2="118" stroke="#005EB8" stroke-width="1.5" marker-end="url(#lma)"/>
+      <line x1="515" y1="41"  x2="440" y2="118" stroke="#005EB8" stroke-width="1.5" marker-end="url(#lma)"/>
+      <line x1="205" y1="231" x2="280" y2="152" stroke="#005EB8" stroke-width="1.5" marker-end="url(#lma)"/>
+      <line x1="515" y1="231" x2="440" y2="152" stroke="#005EB8" stroke-width="1.5" marker-end="url(#lma)"/>
+    </svg>
+  </div>
+
+  <div class="source-bar">
+    <strong>Evidence base:</strong> RAGFlow 2025 year-end review · Mem0 LOCOMO benchmark (arXiv:2504.19413) · Atlan context window limitations guide · OWASP LLM Top 10:2025 · MarketsandMarkets RAG market report (USD 1.94B → USD 9.86B by 2030) · Applied AI enterprise RAG guide
+  </div>
+</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 6 — ARCHITECTURAL PATTERNS
+════════════════════════════════════════════ -->
+<section id="s6">
+<div class="slide-inner">
+  <div class="slide-meta">
+    <span class="slide-num">06 / 10</span>
+    <span class="slide-tag">Architecture Patterns</span>
+    <span class="slide-bar"></span>
+  </div>
+  <h2 class="slide-title">Architectural Patterns Across Segments</h2>
+  <p class="slide-subtitle">There is no single "memory-first" architecture. The right pattern depends on data heterogeneity, latency requirements, and regulatory posture. Choose the pattern, then configure the vendors.</p>
+
+  <div class="arch-grid">
+    <div class="arch-card">
+      <span class="arch-label">Pattern 01</span>
+      <h4>Slim-Prompt + RAG</h4>
+      <p>Small context window with aggressive retrieval, reranking, and summarization before every call. Top-k retrieval + reranker filters noise before the prompt. Session state is minimal — preference summary only.<br><br>
+      <strong>Best for:</strong> Retail support, IT help-desks, high-volume Q&amp;A.<br>
+      <strong>Key stat:</strong> Hybrid RAG (vector + BM25) achieves 15–30% better retrieval accuracy than pure vector. Semantic caching can eliminate LLM inference entirely on repeated queries — significant cost lever at volume.<br>
+      <strong>Watch out:</strong> Fragile on multi-hop reasoning. Complex queries spanning multiple documents or sessions will fail without graph augmentation.</p>
+    </div>
+    <div class="arch-card">
+      <span class="arch-label">Pattern 02</span>
+      <h4>MemGPT-Style Paged Memory</h4>
+      <p>LLM as CPU with a small in-context "working set" backed by a pageable memory store. The system explicitly manages what enters and leaves the context window — like virtual memory in an OS. Interrupts and swap decisions are orchestrated, not implicit.<br><br>
+      <strong>Best for:</strong> Finance (contract review), healthcare (clinical sessions), regulated long-context workloads.<br>
+      <strong>Key stat:</strong> Letta (formerly MemGPT, UC Berkeley) outperforms naive full-context approaches on the DMR benchmark, validated through LongMemEval — which better reflects enterprise temporal reasoning.<br>
+      <strong>Watch out:</strong> Requires careful design of memory schemas and swap trigger rules. Complexity is front-loaded in architecture, not at inference time.</p>
+    </div>
+    <div class="arch-card">
+      <span class="arch-label">Pattern 03</span>
+      <h4>Agent-with-Memory</h4>
+      <p>Multi-step agents that call tools and memory APIs explicitly. Context window holds only the current step's query, plan, and compact tool outputs. Memory APIs handle read/write to vector, graph, and KV stores. State is never implicitly accumulated in the prompt.<br><br>
+      <strong>Best for:</strong> Manufacturing (multi-system ops), logistics, complex IT workflows (multi-file code analysis).<br>
+      <strong>Key stat:</strong> Poorly scoped tool definitions from MCP servers inflate context significantly — one of the top causes of context bloat in agentic systems as of 2025.<br>
+      <strong>Watch out:</strong> Observability is critical. Agents that fail silently due to context overflow or memory miss are hard to debug without explicit tracing per step.</p>
+    </div>
+    <div class="arch-card">
+      <span class="arch-label">Pattern 04</span>
+      <h4>Hybrid Memory (Vector + Graph + KV)</h4>
+      <p>Full-stack memory combining vector retrieval (semantic), knowledge graphs (entity and relationship), KV-cache (session state), and summarization pipelines. Designed for cross-domain, cross-system queries that require both factual recall and relational reasoning.<br><br>
+      <strong>Best for:</strong> Enterprise-wide compliance, cross-segment knowledge management, financial risk that spans products and clients.<br>
+      <strong>Key stat:</strong> Mem0g (graph variant) excels specifically on temporal reasoning tasks — relational structure adds material value for event sequence modeling. Zep's temporal knowledge graph architecture similarly wins on open-domain, cross-session queries.<br>
+      <strong>Watch out:</strong> Highest architectural complexity. Schema design for graph memory is non-trivial. Start with vector + KV, then layer graph when multi-hop queries become the dominant failure mode.</p>
+    </div>
+  </div>
+
+  <!-- Flowchart -->
+  <div class="matrix-wrap" style="margin-top:16px;">
+    <svg viewBox="0 0 740 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:740px;display:block;margin:0 auto;">
+      <defs><marker id="fa" markerWidth="7" markerHeight="7" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#005EB8"/></marker></defs>
+      <!-- User query -->
+      <rect x="10" y="76" width="110" height="48" rx="2" fill="#005EB8"/>
+      <text x="65" y="96"  text-anchor="middle" fill="white" font-size="12" font-weight="bold" font-family="Segoe UI, sans-serif">User</text>
+      <text x="65" y="114" text-anchor="middle" fill="#F3C13A" font-size="11" font-family="Segoe UI, sans-serif">Query</text>
+      <!-- Arrow -->
+      <line x1="120" y1="100" x2="145" y2="100" stroke="#005EB8" stroke-width="1.5" marker-end="url(#fa)"/>
+      <!-- Router -->
+      <polygon points="170,80 210,100 170,120 130,100" fill="#F3C13A"/>
+      <text x="170" y="97"  text-anchor="middle" fill="#222222" font-size="10" font-weight="bold" font-family="Segoe UI, sans-serif">Route</text>
+      <text x="170" y="110" text-anchor="middle" fill="#222222" font-size="9" font-family="Segoe UI, sans-serif">r</text>
+      <!-- Three branches -->
+      <line x1="210" y1="86"  x2="270" y2="40"  stroke="#A2AAAD" stroke-width="1.5" marker-end="url(#fa)"/>
+      <line x1="212" y1="100" x2="270" y2="100" stroke="#A2AAAD" stroke-width="1.5" marker-end="url(#fa)"/>
+      <line x1="210" y1="114" x2="270" y2="162" stroke="#A2AAAD" stroke-width="1.5" marker-end="url(#fa)"/>
+      <!-- Pattern boxes -->
+      <rect x="270" y="16"  width="155" height="48" rx="2" fill="#D6E8FF" stroke="#005EB8"/>
+      <text x="347" y="36"  text-anchor="middle" fill="#005EB8" font-size="11" font-weight="bold" font-family="Segoe UI, sans-serif">Slim-Prompt + RAG</text>
+      <text x="347" y="54"  text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">Retail, IT helpdesk</text>
+      <rect x="270" y="76"  width="155" height="48" rx="2" fill="#D4EDDA" stroke="#A2AAAD"/>
+      <text x="347" y="96"  text-anchor="middle" fill="#155724" font-size="11" font-weight="bold" font-family="Segoe UI, sans-serif">Agent-with-Memory</text>
+      <text x="347" y="114" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">Mfg, logistics, IT ops</text>
+      <rect x="270" y="138" width="155" height="48" rx="2" fill="#F5F5F5" stroke="#A2AAAD"/>
+      <text x="347" y="158" text-anchor="middle" fill="#222222" font-size="11" font-weight="bold" font-family="Segoe UI, sans-serif">MemGPT-Style</text>
+      <text x="347" y="176" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">Finance, healthcare</text>
+      <!-- In-context / memory columns -->
+      <line x1="425" y1="40"  x2="460" y2="40"  stroke="#005EB8" stroke-width="1" marker-end="url(#fa)"/>
+      <line x1="425" y1="100" x2="460" y2="100" stroke="#005EB8" stroke-width="1" marker-end="url(#fa)"/>
+      <line x1="425" y1="162" x2="460" y2="162" stroke="#005EB8" stroke-width="1" marker-end="url(#fa)"/>
+      <rect x="460" y="10"  width="270" height="180" rx="2" fill="#F5F5F5" stroke="#A2AAAD"/>
+      <text x="595" y="34"  text-anchor="middle" fill="#222222" font-size="11" font-weight="bold" font-family="Segoe UI, sans-serif">IN-CONTEXT               MEMORY LAYER</text>
+      <line x1="595" y1="42" x2="595" y2="185" stroke="#A2AAAD" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="525" y="64"  text-anchor="middle" fill="#005EB8" font-size="10" font-family="Segoe UI, sans-serif">Query+RAG chunks</text>
+      <text x="665" y="64"  text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">Vector DB</text>
+      <text x="525" y="100" text-anchor="middle" fill="#155724" font-size="10" font-family="Segoe UI, sans-serif">Step+tool result</text>
+      <text x="665" y="100" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">Graph + KV</text>
+      <text x="525" y="136" text-anchor="middle" fill="#222222" font-size="10" font-family="Segoe UI, sans-serif">Working set only</text>
+      <text x="665" y="136" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">Paged store</text>
+      <text x="595" y="168" text-anchor="middle" fill="#A2AAAD" font-size="9" font-family="Segoe UI, sans-serif">All patterns share this memory abstraction</text>
+    </svg>
+  </div>
+  <p style="font-size:12px;color:var(--mck-gray);margin-top:4px;">Exhibit 5 — All three patterns route through a query router. What differs is the in-context footprint and the memory layer composition. The memory abstraction is common to all.</p>
+</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 7 — ANALYTICAL FRAMEWORKS
+════════════════════════════════════════════ -->
+<section id="s7">
+<div class="slide-inner">
+  <div class="slide-meta">
+    <span class="slide-num">07 / 10</span>
+    <span class="slide-tag">Decision Frameworks</span>
+    <span class="slide-bar"></span>
+  </div>
+  <h2 class="slide-title">Analytical Frameworks for AI Architects</h2>
+  <p class="slide-subtitle">These are the six frameworks a principal architect applies before any LLM workflow goes to production. Each one maps to a governance lever, not just a technical choice.</p>
+
+  <div class="principle-grid" style="grid-template-columns:repeat(2,1fr);">
+    <div class="p-card">
+      <h4>Framework 1 — Cost-Latency-Accuracy Matrix</h4>
+      <p>For every workload, define the acceptable envelope: maximum tokens, maximum latency (p50/p95), and minimum accuracy threshold. Contract review tolerates 30-second latency; real-time chat cannot. Map each workflow to a model tier (budget vs. flagship). Budget-tier models cost 15–50× less — use them for classification and extraction, reserve frontier models for complex reasoning.</p>
+    </div>
+    <div class="p-card">
+      <h4>Framework 2 — Context Budget Model</h4>
+      <p>Define token budgets per step, per user, per product — then enforce and track them. Treat context budgets exactly as you treat CPU or memory budgets: as first-class operational metrics. A 20-turn conversation can consume 5,000–10,000 tokens when only 500–1,000 of recent context would suffice. Unmonitored retrieval strategies are a hidden cost driver that systematic tracking exposes immediately.</p>
+    </div>
+    <div class="p-card">
+      <h4>Framework 3 — AI Maturity Ladder</h4>
+      <p>Track each use case on a five-rung ladder: (1) Pre-LLM baseline → (2) Single-LLM + prompt → (3) RAG + retrieval → (4) Memory layer + agent → (5) Multi-agent autonomous. The memory layer is Rung 4. Most enterprises are at Rung 2 or 3. McKinsey 2025: 71% of organizations report regular GenAI use, but only 17% attribute more than 5% of EBIT to GenAI. The gap is in Rungs 3 and 4.</p>
+    </div>
+    <div class="p-card">
+      <h4>Framework 4 — Failure Mode Analysis</h4>
+      <p>Systematically map how long contexts introduce specific failure modes: (a) Lost-in-middle recall decay below 50% accuracy for buried facts; (b) Context rot — coherent performance on benchmarks but degradation on complex multi-document reasoning; (c) Hallucination amplification in long-context Q&amp;A; (d) Reasoning drift from irrelevant retrieved chunks. Each failure mode maps to a specific architectural fix.</p>
+    </div>
+    <div class="p-card">
+      <h4>Framework 5 — Vendor-Neutrality Assessment</h4>
+      <p>Design memory APIs as an abstraction layer that can swap vendors without rewriting prompts. Decouple: (i) memory schema from prompt templates; (ii) retrieval strategy from embedding model; (iii) memory platform from LLM provider. Zep, Mem0, and Letta all expose compatible APIs — test whether your memory schema is vendor-specific before you discover it in a contract renewal. Version memory schemas separately from models.</p>
+    </div>
+    <div class="p-card">
+      <h4>Framework 6 — Data Sovereignty &amp; Residency Map</h4>
+      <p>New (added from practitioner discourse): For every LLM workflow, map data classification (PII, PHI, confidential, public) × deployment zone (public cloud, private cloud, on-premise, VPC). Gartner projects 40%+ of AI-related data breaches by 2027 will stem from improper cross-border GenAI use. EU AI Act and GDPR create divergent compliance requirements for European enterprises. "Shadow AI" — unapproved employee use of public LLMs — represents 1-in-12 prompts containing confidential data.</p>
+    </div>
+  </div>
+
+  <!-- Radar chart -->
+  <div class="gold-rule"></div>
+  <p><strong>Pattern performance radar — cost efficiency vs. latency vs. reasoning quality:</strong></p>
+  <div class="radar-container">
+    <div class="radar-card">
+      <h5>Slim-Prompt + RAG</h5>
+      <div class="radar-bars">
+        <div class="r-bar-row"><span class="r-label">Cost eff.</span><div class="r-track"><div class="r-fill" style="width:92%"></div></div></div>
+        <div class="r-bar-row"><span class="r-label">Latency</span><div class="r-track"><div class="r-fill" style="width:88%"></div></div></div>
+        <div class="r-bar-row"><span class="r-label">Reasoning</span><div class="r-track"><div class="r-fill" style="width:52%"></div></div></div>
+        <div class="r-bar-row"><span class="r-label">Audit</span><div class="r-track"><div class="r-fill" style="width:55%"></div></div></div>
+      </div>
+      <p>Best: high-volume, simple Q&amp;A. Fragile on multi-hop, regulated tasks.</p>
+    </div>
+    <div class="radar-card">
+      <h5>MemGPT / Paged</h5>
+      <div class="radar-bars">
+        <div class="r-bar-row"><span class="r-label">Cost eff.</span><div class="r-track"><div class="r-fill" style="width:60%"></div></div></div>
+        <div class="r-bar-row"><span class="r-label">Latency</span><div class="r-track"><div class="r-fill" style="width:65%"></div></div></div>
+        <div class="r-bar-row"><span class="r-label">Reasoning</span><div class="r-track"><div class="r-fill" style="width:90%"></div></div></div>
+        <div class="r-bar-row"><span class="r-label">Audit</span><div class="r-track"><div class="r-fill" style="width:85%"></div></div></div>
+      </div>
+      <p>Best: regulated, long-context. Higher latency cost offset by compliance value.</p>
+    </div>
+    <div class="radar-card">
+      <h5>Agent-with-Memory</h5>
+      <div class="radar-bars">
+        <div class="r-bar-row"><span class="r-label">Cost eff.</span><div class="r-track"><div class="r-fill" style="width:70%"></div></div></div>
+        <div class="r-bar-row"><span class="r-label">Latency</span><div class="r-track"><div class="r-fill" style="width:72%"></div></div></div>
+        <div class="r-bar-row"><span class="r-label">Reasoning</span><div class="r-track"><div class="r-fill" style="width:80%"></div></div></div>
+        <div class="r-bar-row"><span class="r-label">Audit</span><div class="r-track"><div class="r-fill" style="width:75%"></div></div></div>
+      </div>
+      <p>Best: multi-system ops. Strong all-around, observability investment required.</p>
+    </div>
+    <div class="radar-card">
+      <h5>Hybrid Memory</h5>
+      <div class="radar-bars">
+        <div class="r-bar-row"><span class="r-label">Cost eff.</span><div class="r-track"><div class="r-fill" style="width:50%"></div></div></div>
+        <div class="r-bar-row"><span class="r-label">Latency</span><div class="r-track"><div class="r-fill" style="width:58%"></div></div></div>
+        <div class="r-bar-row"><span class="r-label">Reasoning</span><div class="r-track"><div class="r-fill" style="width:95%"></div></div></div>
+        <div class="r-bar-row"><span class="r-label">Audit</span><div class="r-track"><div class="r-fill" style="width:90%"></div></div></div>
+      </div>
+      <p>Best: cross-domain compliance. Highest setup cost, highest ceiling for complex tasks.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 8 — CASE SNAPSHOTS
+════════════════════════════════════════════ -->
+<section id="s8">
+<div class="slide-inner">
+  <div class="slide-meta">
+    <span class="slide-num">08 / 10</span>
+    <span class="slide-tag">Segment Case Snapshots</span>
+    <span class="slide-bar"></span>
+  </div>
+  <h2 class="slide-title">Segment-Specific Case Snapshots</h2>
+  <p class="slide-subtitle">Three representative scenarios, each showing the before-state that is common today and the target architecture that memory-first design enables.</p>
+
+  <div class="case-stack">
+
+    <!-- Finance -->
+    <div class="case-card">
+      <div class="case-head">
+        <div class="case-before">
+          <span class="case-label">Before — Current State</span>
+          <div class="case-text">A large bank's contract review system stuffs entire contracts (50–200 pages) into a single 128K-token context window. Compliance analysts report inconsistent outputs on clauses buried in the middle of documents. API costs for contract review have grown 4× in 12 months as more attorneys use the system. Auditors cannot reconstruct which document sections informed a risk flag — no token-level trace exists. The system is blocked from deployment in EU jurisdictions pending GDPR data residency assessment.</div>
+        </div>
+        <div class="case-after">
+          <span class="case-label">After — Target Architecture</span>
+          <div class="case-text">MemGPT-style paged architecture: contract is chunked and indexed in a vector DB with metadata (clause type, jurisdiction, party). Each review step loads only the relevant clause cluster into context via hybrid retrieval. Reasoning chain is logged per step — auditors see exactly which chunks informed each risk flag. Memory layer stores prior reviews of the same counterparty, enabling multi-contract pattern recognition without re-ingesting full documents. Deployed in Azure OpenAI (EU region) — data never leaves EU jurisdiction.</div>
+        </div>
+      </div>
+      <div class="case-foot"><span class="case-tag">💼 Financial Services</span> | Pattern: MemGPT-style + Hybrid RAG | Est. token reduction: 60–80% | Audit trail: per-step, clause-level | Compliance: GDPR, FCA-ready</div>
+    </div>
+
+    <!-- Healthcare -->
+    <div class="case-card">
+      <div class="case-head">
+        <div class="case-before">
+          <span class="case-label">Before — Current State</span>
+          <div class="case-text">A hospital system's clinical assistant is given a patient's full EHR export at the start of each session — often 30,000–80,000 tokens of notes, labs, and medication history. The attending clinician reports the assistant "forgets" critical allergy information mentioned early in long notes. The system has failed HIPAA audit twice: raw EHR data appears in prompt logs stored in a non-compliant third-party logging service. Clinicians distrust the output because they cannot see the reasoning chain. The vendor's public API is used — PHI is routed through a shared inference infrastructure.</div>
+        </div>
+        <div class="case-after">
+          <span class="case-label">After — Target Architecture</span>
+          <div class="case-text">Small, scoped prompts with structured retrieval: EHR data is chunked by clinical category (allergies, medications, diagnoses, recent labs) and stored in a HIPAA-compliant private vector DB (on-premise or Bedrock VPC). Per-session, the assistant retrieves only the clinically relevant categories for the current query. Critical safety data (allergies, active medications) is always pinned at the top of the context window — never buried in the middle. Memory layer holds patient preference notes and prior interaction summaries. Reasoning chain is logged in a HIPAA-compliant audit store.</div>
+        </div>
+      </div>
+      <div class="case-foot"><span class="case-tag">🏥 Healthcare</span> | Pattern: Slim-Prompt + Structured RAG | PHI: on-premise or private VPC | Safety pin: critical data always top-of-context | Compliance: HIPAA, FDA audit-ready</div>
+    </div>
+
+    <!-- Retail -->
+    <div class="case-card">
+      <div class="case-head">
+        <div class="case-before">
+          <span class="case-label">Before — Current State</span>
+          <div class="case-text">A global e-commerce platform's support agent appends the full conversation history to every message — 20-turn conversations consume 8,000–12,000 tokens before the user's new query is even processed. At 50 million monthly support interactions, token costs are the largest AI infrastructure expense. The agent has no memory between sessions — users must re-explain their order history on every contact. Agents share context across concurrent sessions via a poorly isolated caching layer, causing occasional cross-customer data leakage in responses.</div>
+        </div>
+        <div class="case-after">
+          <span class="case-label">After — Target Architecture</span>
+          <div class="case-text">Slim-prompt + RAG + Mem0 session memory: conversation history is summarized after every 5 turns using a lightweight summarization model (budget tier, 50× cheaper). The prompt contains only: current query + session summary + top-3 retrieved order or policy snippets. Mem0 layer stores user preference profile and prior resolution summaries across sessions — the agent now "knows" returning customers. Semantic caching eliminates LLM inference for repeated policy queries (est. 30–40% of volume). Session isolation is enforced at the memory namespace level — no cross-customer leakage possible.</div>
+        </div>
+      </div>
+      <div class="case-foot"><span class="case-tag">🛍️ Retail / Commerce</span> | Pattern: Slim-Prompt + Mem0 + Semantic Cache | Token reduction: ~70% | Cross-session memory: user preference, order history | Est. cost saving: 30–60%</div>
+    </div>
+
+  </div>
+
+  <div class="source-bar">
+    <strong>Patterns based on:</strong> Mem0 research (arXiv:2504.19413) · Tribe AI context-aware memory systems report (30–60% cost reduction, 40–70% retention lift) · Lasso Security LLM compliance guide · OWASP LLM08:2025 · Applied AI enterprise RAG production guide · RAGFlow 2025 year-end review
+  </div>
+</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 9 — ROADMAP
+════════════════════════════════════════════ -->
+<section id="s9">
+<div class="slide-inner">
+  <div class="slide-meta">
+    <span class="slide-num">09 / 10</span>
+    <span class="slide-tag">Implementation Roadmap</span>
+    <span class="slide-bar"></span>
+  </div>
+  <h2 class="slide-title">Roadmap and Implementation Principles</h2>
+  <p class="slide-subtitle">A three-phase program that moves from diagnostic baseline to governed, scalable memory-first architecture. Each phase is independently valuable and produces measurable outputs.</p>
+
+  <div class="roadmap">
+    <div class="phase phase-1">
+      <div class="phase-num">Phase 01 — Months 1–3</div>
+      <h4>Assess &amp; Baseline</h4>
+      <ul>
+        <li>Instrument existing LLM workflows for token consumption, latency (p50/p95), and cost per workflow per user</li>
+        <li>Map all LLM touchpoints — including shadow AI usage and unapproved employee tools</li>
+        <li>Classify data sensitivity for every workflow: PII, PHI, confidential IP, public</li>
+        <li>Identify top-3 workflows by token cost and top-3 by compliance risk — these are Phase 2 targets</li>
+        <li>Establish baseline: context window utilization %, average token waste, current retrieval precision rate</li>
+        <li>Produce: Token budget report, data residency map, failure mode heat map by segment</li>
+      </ul>
+    </div>
+    <div class="phase phase-2">
+      <div class="phase-num">Phase 02 — Months 4–9</div>
+      <h4>Design &amp; Prototype</h4>
+      <ul>
+        <li>Select one high-value workflow per segment; apply the correct pattern (Slim-RAG, MemGPT, Agent, Hybrid)</li>
+        <li>Define context budgets per step and implement memory layer (vector DB + session store as minimum)</li>
+        <li>Stand up a retrieval evaluation pipeline — measure retrieval precision before any model evaluation</li>
+        <li>Decouple memory schemas from prompt templates; version both independently</li>
+        <li>Implement token-level observability: trace every prompt, every retrieval, every memory read/write</li>
+        <li>Run failure mode tests: lost-in-middle, context rot, cross-session leakage, prompt injection</li>
+        <li>Produce: Memory architecture blueprint, context budget model, pilot ROI measurement</li>
+      </ul>
+    </div>
+    <div class="phase phase-3">
+      <div class="phase-num">Phase 03 — Months 10–18</div>
+      <h4>Scale &amp; Govern</h4>
+      <ul>
+        <li>Standardize memory-first patterns into a reusable architectural template used by all new AI workstreams</li>
+        <li>Enforce prompt-scoping rules via an AI gateway layer — no prompt enters production without context budget approval</li>
+        <li>Deploy governance: token budgets in cost dashboards, model version tracking, memory schema version registry</li>
+        <li>Implement approval gates for high-risk workloads (regulated segments require human-in-the-loop review on memory schema changes)</li>
+        <li>Establish vendor-neutrality: test memory platform swap on at least one workflow annually</li>
+        <li>Report to board: token cost per business outcome, latency SLA adherence, compliance incident rate (target: zero)</li>
+        <li>Produce: Enterprise AI governance framework, board-level AI cost dashboard, annual vendor-agility review</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="gold-rule"></div>
+  <p><strong>Six implementation principles that apply across all phases:</strong></p>
+
+  <div class="impl-grid">
+    <div class="impl-card">
+      <h5>One Job Per LLM Call</h5>
+      <p>Every inference call has a single, clearly scoped task. Multi-task prompts dilute attention and make failure analysis impossible.</p>
+    </div>
+    <div class="impl-card">
+      <h5>Aggressive Summarization &amp; Pruning</h5>
+      <p>Compress conversation history after every 5 turns. Use budget-tier models for summarization — they cost 50× less and quality is equivalent for this task.</p>
+    </div>
+    <div class="impl-card">
+      <h5>Decouple Memory from Prompts</h5>
+      <p>Memory schemas must be independently versionable. A prompt change must never require a memory migration — and vice versa.</p>
+    </div>
+    <div class="impl-card">
+      <h5>Context as Cost Engineering</h5>
+      <p>Treat context-window design with the same discipline as infrastructure cost engineering. Token budgets are on the P&amp;L, not just the tech roadmap.</p>
+    </div>
+    <div class="impl-card">
+      <h5>Vendor Agility by Design</h5>
+      <p>Design memory APIs as an abstraction that can swap vendors. Annually test whether you can migrate your top memory platform without a prompt rewrite.</p>
+    </div>
+    <div class="impl-card">
+      <h5>Data Sovereignty First</h5>
+      <p>Before any LLM workflow is built, define data residency requirements. Private cloud or on-premise is not optional for PHI, trade data, or confidential IP in regulated jurisdictions.</p>
+    </div>
+  </div>
+
+  <!-- Timeline SVG -->
+  <div class="matrix-wrap" style="margin-top:16px;">
+    <svg viewBox="0 0 720 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:720px;display:block;margin:0 auto;">
+      <line x1="30" y1="40" x2="700" y2="40" stroke="#A2AAAD" stroke-width="2"/>
+      <!-- Phase 1 -->
+      <circle cx="80"  cy="40" r="14" fill="#F3C13A" stroke="white" stroke-width="2"/>
+      <text x="80"  y="45" text-anchor="middle" fill="#222222" font-size="9" font-weight="bold" font-family="Segoe UI, sans-serif">01</text>
+      <text x="80"  y="22" text-anchor="middle" fill="#222222" font-size="11" font-weight="bold" font-family="Segoe UI, sans-serif">Assess</text>
+      <text x="80"  y="64" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">M1–3</text>
+      <!-- Phase 2 -->
+      <circle cx="360" cy="40" r="14" fill="#005EB8" stroke="white" stroke-width="2"/>
+      <text x="360" y="45" text-anchor="middle" fill="white" font-size="9" font-weight="bold" font-family="Segoe UI, sans-serif">02</text>
+      <text x="360" y="22" text-anchor="middle" fill="#222222" font-size="11" font-weight="bold" font-family="Segoe UI, sans-serif">Design &amp; Prototype</text>
+      <text x="360" y="64" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">M4–9</text>
+      <!-- Phase 3 -->
+      <circle cx="650" cy="40" r="14" fill="#003F7F" stroke="white" stroke-width="2"/>
+      <text x="650" y="45" text-anchor="middle" fill="#F3C13A" font-size="9" font-weight="bold" font-family="Segoe UI, sans-serif">03</text>
+      <text x="650" y="22" text-anchor="middle" fill="#222222" font-size="11" font-weight="bold" font-family="Segoe UI, sans-serif">Scale &amp; Govern</text>
+      <text x="650" y="64" text-anchor="middle" fill="#A2AAAD" font-size="10" font-family="Segoe UI, sans-serif">M10–18</text>
+      <!-- Milestones on line -->
+      <circle cx="200" cy="40" r="5" fill="#A2AAAD"/>
+      <circle cx="480" cy="40" r="5" fill="#A2AAAD"/>
+      <text x="200" y="64" text-anchor="middle" fill="#A2AAAD" font-size="9" font-family="Segoe UI, sans-serif">Token report</text>
+      <text x="480" y="64" text-anchor="middle" fill="#A2AAAD" font-size="9" font-family="Segoe UI, sans-serif">Pilot ROI</text>
+    </svg>
+  </div>
+</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 10 — ARCHITECT'S CHECKLIST
+════════════════════════════════════════════ -->
+<section id="s10">
+<div class="slide-inner">
+  <div class="slide-meta">
+    <span class="slide-num">10 / 10</span>
+    <span class="slide-tag">Call to Action</span>
+    <span class="slide-bar"></span>
+  </div>
+  <h2 class="slide-title">The Architect's Checklist</h2>
+  <p class="slide-subtitle">Ten questions to bring into your next architecture review. If the answer to any of these is "no" or "we don't know," that is your highest-priority action item.</p>
+
+  <div class="checklist-grid">
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text"><strong>Token budget defined?</strong> Does every production LLM workflow have a documented token budget per step, per user, and per product — enforced in code, not just in a policy doc?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text"><strong>Memory schema decoupled?</strong> Can you change your prompt template without migrating your memory schema — and vice versa? Are both versioned independently in your CI/CD pipeline?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text"><strong>Data residency mapped?</strong> For every LLM workflow, do you know exactly where inference happens, where prompt logs are stored, and whether any PHI, PII, or confidential IP crosses a regulatory boundary?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text"><strong>Effective context tested?</strong> Have you tested your top workflows against the model's <em>effective</em> context length (not advertised maximum)? Do you know the point at which reasoning quality degrades for your specific queries?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text"><strong>Retrieval evaluated?</strong> Do you measure retrieval precision and recall independently of LLM output quality? Can you identify when a failure is a retrieval failure vs. a generation failure?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text"><strong>Shadow AI visible?</strong> Do you know which LLM tools your employees are using that are not officially sanctioned? Does your governance framework cover unapproved tools, browser extensions, and embedded SaaS AI features?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text"><strong>Memory vendor-agile?</strong> If your memory platform vendor raised prices by 3× tomorrow, could you migrate to an alternative within 90 days without rewriting your prompt templates? Have you tested this?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text"><strong>Audit trail per inference?</strong> For regulated workflows, does every LLM call produce a traceable record of: which chunks were retrieved, what memory was read, what the output was, and who the user was — with immutable logging?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text"><strong>Failure modes documented?</strong> Have you run adversarial tests for: lost-in-the-middle recall, cross-session context leakage, prompt injection, context rot at scale, and hallucination in long-context Q&amp;A — for each production workflow?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text"><strong>Board-level visibility?</strong> Can your AI program leader report token cost per business outcome, latency SLA adherence, and compliance incident rate to the board — on a monthly dashboard — without manual data collection?</div>
+    </div>
+  </div>
+
+  <div class="gold-rule"></div>
+
+  <div class="stat-row">
+    <div class="stat-box">
+      <div class="stat-num">USD 8.8B</div>
+      <div class="stat-label">Enterprise LLM market 2025, growing to USD 71.1B by 2034 at 26.1% CAGR (Global Market Insights). The architecture decisions made in the next 18 months will determine competitive positioning for the next decade.</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">17%</div>
+      <div class="stat-label">Share of enterprises attributing 5%+ of EBIT to GenAI (McKinsey 2025). 71% use GenAI regularly. The gap between usage and value is the memory-first architecture gap.</div>
+    </div>
+    <div class="stat-box" style="border-bottom-color:#005EB8; background:#F3C13A;">
+      <div class="stat-num" style="color:#005EB8;">90%</div>
+      <div class="stat-label" style="color:#222222;">Token reduction achievable with selective memory retrieval vs. full-context approaches, per Mem0 LOCOMO benchmark — with 26% higher accuracy and 91% lower p95 latency.</div>
+    </div>
+  </div>
+
+  <div class="source-bar">
+    <strong>Primary evidence sources:</strong> Mem0 arXiv:2504.19413 · RAGFlow 2025 year-end review · Applied AI enterprise RAG guide · Atlan context window limitations · Lasso Security LLM compliance &amp; privacy guides · Global Market Insights enterprise LLM market report · McKinsey AI 2025 report · OWASP LLM Top 10:2025 · Liu et al. "Lost in the Middle" TACL 2024 · Gartner GenAI predictions 2025 · Tribe AI context-aware memory systems · Medium: Kuldeep Paul (context engineering), Phuoc Nguyen (long-context windows) · Redis token optimization guide · 16x Eval LLM context management guide · NStarX RAG evolution 2026–2030
+  </div>
+
+  <p style="margin-top:24px;font-size:12px;color:var(--mck-gray);text-align:center;">
+    © 2025 — Board-ready for print. Use Ctrl+P / Cmd+P for PDF export. Each slide is self-contained for presenter use.
+  </p>
+</div>
+</section>
+
+</div><!-- end .deck -->
+
+<script>
+  const sections = document.querySelectorAll('section[id]');
+  const pills = document.querySelectorAll('nav .pill');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute('id');
+        pills.forEach(p => {
+          p.classList.toggle('active', p.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { threshold: 0.4 });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
