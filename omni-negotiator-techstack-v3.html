@@ -154,6 +154,7 @@ nav { position:sticky; top:0; z-index:100; background:var(--bg); border-bottom:0
   animation:fadeIn .25s ease;
 }
 .viz-panel.visible { display:block; }
+.viz-panel .mermaid { min-height:180px; }
 
 .viz-header {
   padding:1.1rem 1.5rem;
@@ -168,8 +169,14 @@ nav { position:sticky; top:0; z-index:100; background:var(--bg); border-bottom:0
 .vh-badges { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
 .vh-tool { font-family:'DM Mono',monospace; font-size:11px; padding:3px 9px; border-radius:4px; font-weight:500; }
 
-.viz-body { padding:1.5rem; overflow-x:auto; }
+.viz-body { padding:1.5rem 1.5rem 2rem; overflow-x:auto; min-height:200px; }
 .viz-body .mermaid { font-family:'DM Mono',monospace; min-width:0; }
+/* ensure mermaid SVG fills the panel properly */
+.viz-body svg { max-width:100%; height:auto; display:block; margin:0 auto; }
+/* wider panels for complex diagrams */
+.viz-panel.wide { max-width:100%; }
+.viz-body.scroll { overflow-x:auto; }
+.viz-body.scroll svg { min-width:700px; }
 
 /* CODE BLOCK (ADR, agent.md, CLAUDE.md, Runbook) */
 .code-block {
@@ -610,26 +617,31 @@ footer a:hover { text-decoration:underline; }
         </div>
       </div>
     </div>
-    <div class="viz-body">
+    <div class="viz-body scroll">
       <div class="mermaid">
 flowchart TB
   subgraph buyer["👤 Buyer — Human in the Loop"]
-    WA_IN["WhatsApp\nMorning Brief + HITL Approvals"]
+    WA_IN["📱 WhatsApp\nMorning Brief + HITL Approvals"]
   end
 
-  subgraph omni["🤖 Omni-Negotiator System  ·  Railway.app / Replit  ·  Python / LangGraph"]
-    direction LR
-    ORCH["🧠 LangGraph\nOrchestrator\nStateful graph"]
-    SCOUT["🖐 Browser-use.ai\nScouting Node\nLarge Browser Model"]
-    VISION["👁 Vision-Legal Node\nGemini 1.5 Pro\nMultimodal RAG"]
-    RISK["⚠️ Risk Node\nURA Master Plan\nGLS cross-reference"]
-    NEG["💬 Negotiation Node\nGPT-5 + Game Theory\nDrip sequencing"]
-    COMM["📱 Twilio Connector\nWhatsApp Business\nHITL gate"]
+  subgraph omni["🤖 Omni-Negotiator  ·  Railway.app  ·  Python / LangGraph"]
+    direction TB
+    ORCH["🧠 LangGraph Orchestrator\nStateful agent graph"]
+    SCOUT["🖐 Browser-use.ai\nScouting — 1,000+ listings/day"]
+    VISION["👁 Gemini 1.5 Pro\nVision · GFA phantom space"]
+    RISK["⚠️ URA Risk Node\nMaster Plan · GLS flags"]
+    NEG["💬 GPT-5\nNegotiation · Game Theory"]
+    COMM["📱 Twilio Connector\nWhatsApp · HITL gate"]
+    ORCH --> SCOUT
+    ORCH --> VISION
+    ORCH --> RISK
+    ORCH --> NEG
+    ORCH --> COMM
   end
 
-  subgraph data["🗄 Data Layer  ·  Supabase Cloud"]
-    SQL["listings_master\nPostgres SQL\nPrices · MOP · GLS"]
-    VEC["negotiation_logs\npgvector\nSentiment embeddings"]
+  subgraph data["🗄 Supabase — Data Layer"]
+    SQL["listings_master\nPostgres · prices · MOP · GLS"]
+    VEC["negotiation_logs\npgvector · sentiment embeddings"]
   end
 
   subgraph ext["🌐 External APIs"]
@@ -641,19 +653,19 @@ flowchart TB
   end
 
   WA_IN <-->|"Approve / Review"| COMM
-  ORCH --> SCOUT & VISION & RISK & NEG & COMM
   SCOUT --> SQL
-  NEG & VISION --> VEC
+  NEG --> VEC
+  VISION --> VEC
   SCOUT <--> PG
   RISK <--> URA
   NEG <--> OAI
   VISION <--> GEM
   COMM <--> TWL
 
-  style omni fill:#F0EDE6,stroke:#2D6A4F,stroke-width:1.5px
-  style data fill:#E8F0EB,stroke:#2D6A4F,stroke-width:1px
-  style buyer fill:#E8EFF7,stroke:#1A3A5C,stroke-width:1px
-  style ext fill:#F7F5F0,stroke:#9B9890,stroke-width:0.5px
+  style omni fill:#F0EDE6,stroke:#2D6A4F,stroke-width:2px
+  style data fill:#E8F0EB,stroke:#2D6A4F,stroke-width:1.5px
+  style buyer fill:#E8EFF7,stroke:#1A3A5C,stroke-width:1.5px
+  style ext fill:#F7F5F0,stroke:#9B9890,stroke-width:1px
       </div>
     </div>
   </div>
@@ -707,13 +719,13 @@ Deploy on <span class="cc">Railway.app</span> for 24/7 operation without local m
 - Requires Python 3.11+ and LangSmith for observability</pre>
       </div>
       <div style="margin-top:1rem;">
-        <div class="mermaid">
+        <div class="mermaid" style="min-height:220px;">
 sequenceDiagram
   autonumber
-  participant Scout as Browser-use.ai (Scout)
-  participant DB as Supabase (listings_master)
-  participant Orch as LangGraph Orchestrator
-  participant WA as WhatsApp (Buyer HITL)
+  participant Scout as 🖐 Browser-use.ai
+  participant DB as 🗄 Supabase
+  participant Orch as 🧠 LangGraph
+  participant WA as 📱 WhatsApp
 
   Scout->>DB: Write 1,000+ raw listings (daily scrape)
   DB-->>Orch: Query top 2% — ABSD cliff + MOP flags
@@ -768,33 +780,33 @@ sequenceDiagram
       </div>
       <div class="mermaid">
 stateDiagram-v2
-  [*] --> Discovery
+  [*] --> Discovery : start
 
   Discovery --> SignalFilter : 1,000+ listings scraped
-  SignalFilter --> Shortlist : top 2% pass — ABSD cliff + MOP flags
-  SignalFilter --> Discovery : no qualifying units
+  SignalFilter --> Shortlist : top 2% — ABSD + MOP pass
+  SignalFilter --> Discovery : no qualifying units — retry
 
   Shortlist --> VisionInspection : request floor plan / video
   VisionInspection --> InspectionReport : GFA phantom space calculated
-  InspectionReport --> RiskCheck
+  InspectionReport --> RiskCheck : report ready
 
-  RiskCheck --> HITLReview : no GLS risk
-  RiskCheck --> Discard : view-block risk detected
+  RiskCheck --> HITLReview : no GLS risk detected
+  RiskCheck --> Discard : view-block risk flagged
 
   HITLReview --> AwaitApproval : draft sent via WhatsApp
-  AwaitApproval --> DripNegotiation : buyer APPROVES
+  AwaitApproval --> DripNegotiation : buyer APPROVES ✅
   AwaitApproval --> Discard : buyer rejects
 
   DripNegotiation --> Sleep7 : no agent reply
-  Sleep7 --> DripNegotiation : resume after 7 days
+  Sleep7 --> DripNegotiation : resume — 7 days
   DripNegotiation --> LowBall : on market > 90 days
   LowBall --> HITLReview : low-ball draft ready
 
   DripNegotiation --> OfferStage : agent engages
-  OfferStage --> HITLReview : final offer ready
-  OfferStage --> Sleep14 : stalled
-  Sleep14 --> OfferStage : resume after 14 days
-  OfferStage --> [*] : deal closed or abandoned
+  OfferStage --> HITLReview : final offer for approval
+  OfferStage --> Sleep14 : negotiation stalled
+  Sleep14 --> OfferStage : resume — 14 days
+  OfferStage --> [*] : closed or abandoned
       </div>
     </div>
   </div>
@@ -868,43 +880,50 @@ flowchart TD
         </div>
       </div>
     </div>
-    <div class="viz-body">
+    <div class="viz-body scroll">
       <div class="mermaid">
 sequenceDiagram
   autonumber
-  participant PG as PropertyGuru / 99.co
-  participant Scout as Browser-use.ai
-  participant Vision as Gemini Vision Node
-  participant Risk as URA Risk Node
-  participant GPT as GPT-5 Negotiation Node
-  participant DB as Supabase
-  participant WA as WhatsApp (Twilio)
-  participant Buyer as Buyer (HITL)
-  participant Agent as Seller Agent
+  participant Scout as 🖐 Scout<br/>(Browser-use.ai)
+  participant Vision as 👁 Vision<br/>(Gemini)
+  participant GPT as 🧠 GPT-5<br/>(Negotiation)
+  participant DB as 🗄 Supabase
+  participant WA as 📱 WhatsApp<br/>(Twilio)
+  participant Buyer as 👤 Buyer<br/>(HITL)
+  participant Agent as 🏠 Seller<br/>Agent
 
-  Scout->>PG: Daily scrape — 1,000+ listings
-  PG-->>Scout: Raw listing feed
-  Scout->>DB: Write to listings_master
-  Scout->>Vision: Send floor plan + video URL (top 2%)
-  Vision-->>Scout: "12% phantom GFA — AC ledge. Recommend -5% bid"
-  Scout->>Risk: Check URA Master Plan for GLS sites
-  Risk-->>Scout: "No GLS within 500m — clear"
-  Scout->>GPT: Generate negotiation opening
-  GPT-->>Scout: Draft — "Unit at $2.85M. URA comp: $2.71M Mar 2026. Open to discuss?"
-  Scout->>WA: Send Morning Brief + draft to Buyer
-  WA->>Buyer: Morning Brief notification
+  rect rgb(232, 240, 235)
+    Note over Scout,DB: Phase A — Daily scrape & inspection
+    Scout->>DB: Write 1,000+ raw listings
+    Scout->>Vision: Send floor plan + video (top 2%)
+    Vision-->>Scout: "12% phantom GFA · recommend −5% bid"
+    Scout->>DB: Write inspection report
+  end
 
-  Buyer-->>WA: Tap APPROVE ✅
-  WA->>Agent: Message delivered
+  rect rgb(232, 239, 247)
+    Note over Scout,GPT: Phase B — Draft generation
+    Scout->>GPT: Generate opening message
+    GPT-->>Scout: "Unit $2.85M · URA comp $2.71M · Open to discuss?"
+  end
 
-  Agent-->>WA: Reply — "Can do $2.80M"
-  WA->>DB: Log reply in negotiation_logs
-  WA->>GPT: Generate counter-offer (SORA stress-tested)
-  GPT-->>WA: Counter — "$2.76M — based on URA data"
-  WA->>Buyer: Counter draft for HITL review
+  rect rgb(253, 240, 220)
+    Note over WA,Buyer: Phase C — HITL approval gate
+    Scout->>WA: Send Morning Brief + draft
+    WA->>Buyer: Notification sent
+    Buyer-->>WA: Tap APPROVE ✅
+    WA->>Agent: Message delivered
+  end
 
-  Note over Scout,DB: If no reply within 7 days → Sleep state logged → auto follow-up scheduled
-  Note over WA,Buyer: Every send requires explicit Buyer APPROVE tap — never auto-sent
+  rect rgb(238, 234, 249)
+    Note over Agent,GPT: Phase D — Counter-offer cycle
+    Agent-->>WA: "Can do $2.80M"
+    WA->>DB: Log reply in negotiation_logs
+    WA->>GPT: Generate SORA-tested counter
+    GPT-->>WA: "$2.76M based on URA data"
+    WA->>Buyer: Counter draft for HITL review
+  end
+
+  Note over Scout,DB: No reply in 7 days → Sleep state → auto follow-up
       </div>
     </div>
   </div>
@@ -923,48 +942,52 @@ sequenceDiagram
         </div>
       </div>
     </div>
-    <div class="viz-body">
+    <div class="viz-body scroll">
       <div class="mermaid">
 flowchart TB
-  subgraph internet["🌐 Public Internet (untrusted)"]
-    PG_EXT["PropertyGuru / 99.co\n(Public listing portal)"]
-    WA_EXT["WhatsApp Business\n(Twilio endpoint)"]
-    URA_EXT["URA Open Data API\n(Singapore Govt)"]
+  subgraph internet["🌐 Public Internet — untrusted zone"]
+    PG_EXT["PropertyGuru / 99.co\npublic listing portal"]
+    WA_EXT["WhatsApp Business API\nTwilio endpoint"]
+    URA_EXT["URA Open Data API\nSingapore Govt — public"]
   end
 
-  subgraph sg_cloud["🛡️ Singapore Cloud Zone (Railway.app / Replit)"]
-    direction TB
-    subgraph agent_runtime["Agent Runtime — No PII stored here"]
-      ORCH2["LangGraph Orchestrator"]
-      SCOUT2["Browser-use.ai Scout"]
-      VISION2["Gemini Vision Node"]
-      RISK2["URA Risk Node"]
-      NEG2["GPT-5 Negotiation Node"]
+  subgraph sg_cloud["🛡 Singapore Cloud Runtime — Railway.app"]
+    subgraph agent_runtime["Agent Compute — no PII stored here"]
+      ORCH2["🧠 LangGraph Orchestrator"]
+      SCOUT2["🖐 Browser-use.ai"]
+      VISION2["👁 Gemini Vision Node"]
+      RISK2["⚠️ URA Risk Node"]
+      NEG2["💬 GPT-5 Negotiation Node"]
     end
-    subgraph gateway["API Gateway — Rate-limited + logged"]
-      GW["Egress controller\nOutbound calls only\nNo inbound ports open"]
+    subgraph gateway["API Gateway — rate-limited · all calls logged"]
+      GW["Egress controller\nHTTPS outbound only\nno inbound ports"]
     end
+    ORCH2 --> GW
   end
 
-  subgraph data_zone["🔒 Data Zone (Supabase — Singapore region)"]
-    DB2["listings_master\nNo PII — property data only"]
-    LOGS2["negotiation_logs\nAgent + buyer messages\nEncrypted at rest · AES-256"]
-    VEC2["pgvector embeddings\nSentiment — anonymised"]
+  subgraph data_zone["🔒 Data Zone — Supabase Singapore region"]
+    DB2["listings_master\nno PII · property data only"]
+    LOGS2["negotiation_logs\nmessages encrypted at rest · AES-256"]
+    VEC2["pgvector embeddings\nsentiment only · anonymised"]
   end
 
-  subgraph buyer_device["📱 Buyer Device (trusted)"]
-    BUYER2["WhatsApp app\nHITL approval gate\nBuyer identity — local only"]
+  subgraph buyer_device["📱 Buyer Device — trusted"]
+    BUYER2["WhatsApp app\nHITL gate · identity local only"]
   end
 
-  ORCH2 --> GW
-  GW -->|"HTTPS only"| PG_EXT & WA_EXT & URA_EXT
-  ORCH2 <-->|"Encrypted DB conn"| DB2 & LOGS2 & VEC2
-  WA_EXT <-->|"End-to-end encrypted"| BUYER2
+  GW -->|"HTTPS only"| PG_EXT
+  GW -->|"HTTPS only"| WA_EXT
+  GW -->|"HTTPS only"| URA_EXT
+  ORCH2 <-->|"encrypted DB connection"| DB2
+  ORCH2 <-->|"encrypted DB connection"| LOGS2
+  ORCH2 <-->|"encrypted DB connection"| VEC2
+  WA_EXT <-->|"end-to-end encrypted"| BUYER2
 
-  style internet fill:#FCEAEA,stroke:#C0392B,stroke-width:1px
-  style sg_cloud fill:#E8F0EB,stroke:#2D6A4F,stroke-width:1.5px
-  style data_zone fill:#E8EFF7,stroke:#1A3A5C,stroke-width:1.5px
-  style buyer_device fill:#FCEAE4,stroke:#7A2E1A,stroke-width:1px
+  style internet fill:#FCEAEA,stroke:#C0392B,stroke-width:1.5px
+  style sg_cloud fill:#E8F0EB,stroke:#2D6A4F,stroke-width:2px
+  style agent_runtime fill:#F0EDE6,stroke:#2D6A4F,stroke-width:1px
+  style data_zone fill:#E8EFF7,stroke:#1A3A5C,stroke-width:2px
+  style buyer_device fill:#FCEAE4,stroke:#7A2E1A,stroke-width:1.5px
   style gateway fill:#FDF0DC,stroke:#B8950A,stroke-width:1px
       </div>
     </div>
@@ -986,40 +1009,44 @@ flowchart TB
     </div>
     <div class="viz-body">
       <div class="mermaid">
-flowchart LR
-  subgraph morning["🌅 Every Morning — Automated"]
-    A1([AI scans 1,000+\nproperty listings]) --> A2{Meets your\ncriteria?}
-    A2 -->|No| A3([Skip])
-    A2 -->|Yes| A4[Check tax impact\nABSD cliff analysis]
-    A4 --> A5[Inspect floor plan\nand video]
-    A5 --> A6[Check future\nconstruction risk]
-    A6 --> A7[Prepare your\nMorning Brief]
+flowchart TD
+  subgraph morning["🌅 Every Morning — AI runs automatically"]
+    A1([AI scans\n1,000+ listings]) --> A2{Meets your\ncriteria?}
+    A2 -->|No| A3([Skip — try next])
+    A2 -->|Yes| A4[Check ABSD\ntax impact]
+    A4 --> A5[Inspect floor plan\n& video]
+    A5 --> A6[Check URA\nconstruction risk]
+    A6 --> A7[📲 Send Morning\nBrief to you]
   end
 
-  subgraph you["☕ You — 5 minutes"]
-    B1([Receive WhatsApp\nMorning Brief]) --> B2{Interested\nin a unit?}
-    B2 -->|No| B3([AI continues\nwatching])
-    B2 -->|Yes| B4[AI drafts opening\nmessage to agent]
-    B4 --> B5{Approve\nto send?}
-    B5 -->|Yes| B6([Message sent])
-    B5 -->|No| B7([Edit and re-draft])
+  subgraph you["☕ You — 5 minutes on WhatsApp"]
+    B1([Receive\nMorning Brief]) --> B2{Interested?}
+    B2 -->|No| B3([AI keeps watching])
+    B2 -->|Yes| B4[AI drafts\nopening message]
+    B4 --> B5{Tap to\nApprove?}
+    B5 -->|Approve ✅| B6([Message sent\nto agent])
+    B5 -->|Edit| B7([Adjust draft\n& re-approve])
   end
 
-  subgraph negotiate["🤝 Over Weeks / Months — AI manages"]
+  subgraph negotiate["🤝 Weeks / Months — AI manages the relationship"]
     C1([Agent replies]) --> C2{Agent\nengaged?}
-    C2 -->|No reply 7 days| C3[AI follows up\nautomatically]
+    C2 -->|Silent 7 days| C3[Auto follow-up]
     C3 --> C2
-    C2 -->|Yes| C4[AI proposes\ncounter-offer\ndata-backed]
+    C2 -->|Yes| C4[AI proposes\ndata-backed counter]
     C4 --> C5{You approve\ncounter?}
-    C5 -->|Yes| C6([Sent to agent])
-    C5 -->|No| C7([Adjust and retry])
-    C6 --> C8{Deal\nagreed?}
+    C5 -->|Yes ✅| C6([Counter sent])
+    C5 -->|No| C7([Edit & retry])
+    C6 --> C8{Deal?}
     C8 -->|Yes| C9([🎉 Proceed to OTP])
     C8 -->|Not yet| C2
   end
 
   A7 --> B1
   B6 --> C1
+
+  style morning fill:#E8F0EB,stroke:#2D6A4F,stroke-width:1.5px
+  style you fill:#E8EFF7,stroke:#1A3A5C,stroke-width:1.5px
+  style negotiate fill:#EEEAF9,stroke:#3C2A6E,stroke-width:1.5px
       </div>
     </div>
   </div>
@@ -1059,12 +1086,40 @@ flowchart LR
 <script>
   mermaid.initialize({
     startOnLoad: false,
-    theme: 'neutral',
-    fontFamily: "'DM Mono', monospace",
-    fontSize: 13,
-    flowchart: { curve: 'basis', padding: 20 },
-    sequence: { actorMargin: 60 }
+    theme: 'base',
+    themeVariables: {
+      fontSize: '15px',
+      fontFamily: "'DM Mono', monospace",
+      primaryColor: '#E8F0EB',
+      primaryBorderColor: '#2D6A4F',
+      primaryTextColor: '#1A1917',
+      secondaryColor: '#E8EFF7',
+      tertiaryColor: '#FDF0DC',
+      lineColor: '#6B6860',
+      textColor: '#1A1917',
+      nodeBorder: '#2D6A4F',
+      clusterBkg: '#F0EDE6',
+      clusterBorder: '#9B9890',
+      edgeLabelBackground: '#F7F5F0',
+      actorBkg: '#E8F0EB',
+      actorBorder: '#2D6A4F',
+      actorTextColor: '#1A1917',
+      actorLineColor: '#9B9890',
+      signalColor: '#2D6A4F',
+      signalTextColor: '#1A1917',
+      noteBkgColor: '#FDF0DC',
+      noteTextColor: '#6B3E0A',
+      noteBorderColor: '#B8950A',
+      fillType0: '#E8F0EB', fillType1: '#E8EFF7', fillType2: '#EEEAF9',
+      fillType3: '#FDF0DC', fillType4: '#FCEAE4', fillType5: '#EAF5E2',
+    },
+    flowchart: { curve: 'basis', padding: 24, nodeSpacing: 50, rankSpacing: 60, useMaxWidth: true },
+    sequence: { actorMargin: 80, width: 160, height: 55, boxMargin: 12, messageMargin: 45, mirrorActors: false, useMaxWidth: true, diagramMarginX: 20, diagramMarginY: 20 },
+    stateDiagram: { useMaxWidth: true },
   });
+
+  // Track which panels have been rendered already
+  const rendered = new Set();
 
   // Stack layer toggle
   const stackIds = ['brain','cognition','hands','vision','memory','risk','voice'];
@@ -1083,14 +1138,13 @@ flowchart LR
     }
   }
 
-  // Audience matrix toggle
+  // Audience matrix toggle — render mermaid lazily, only once per panel
   const audIds = ['csuite','cto','engr','dev','agent','mlops','sec','product'];
   function toggleAud(id) {
     const panel = document.getElementById('vpanel-' + id);
     const card  = document.getElementById('acard-' + id);
     const open  = panel.classList.contains('visible');
 
-    // close all
     audIds.forEach(a => {
       document.getElementById('vpanel-' + a).classList.remove('visible');
       document.getElementById('acard-'  + a).classList.remove('active');
@@ -1099,22 +1153,21 @@ flowchart LR
     if (!open) {
       panel.classList.add('visible');
       card.classList.add('active');
-      // render mermaid diagrams inside the newly visible panel
-      setTimeout(() => {
-        const nodes = panel.querySelectorAll('.mermaid:not([data-processed])');
-        if (nodes.length) {
-          mermaid.run({ nodes });
-        }
-        panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
-      }, 80);
+
+      if (!rendered.has(id)) {
+        rendered.add(id);
+        // Give the panel a frame to become visible before measuring
+        requestAnimationFrame(() => {
+          const nodes = panel.querySelectorAll('.mermaid');
+          if (nodes.length) {
+            mermaid.run({ nodes: Array.from(nodes) }).catch(e => console.warn('mermaid render:', e));
+          }
+        });
+      }
+
+      setTimeout(() => panel.scrollIntoView({ behavior:'smooth', block:'start' }), 120);
     }
   }
-
-  // Initial render for any visible mermaid nodes on load (none by default — all panels hidden)
-  // Render the first audience panel proactively so it feels fast on first click
-  document.addEventListener('DOMContentLoaded', () => {
-    // nothing pre-rendered; lazy render on click
-  });
 </script>
 </body>
 </html>
