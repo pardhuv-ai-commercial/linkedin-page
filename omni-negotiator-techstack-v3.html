@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Omni-Negotiator v2.0 — AI Techstack Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F7F5F0; --surface: #FFFFFF; --surface2: #F0EDE6;
+  --border: rgba(0,0,0,0.09); --border2: rgba(0,0,0,0.16);
+  --text: #1A1917; --muted: #6B6860; --hint: #9B9890;
+  --accent: #1A3A2A; --accent2: #2D6A4F; --accent-light: #E8F0EB;
+  --blue:#1A3A5C; --blue-bg:#E8EFF7;
+  --purple:#3C2A6E; --purple-bg:#EEEAF9;
+  --teal:#0F5143; --teal-bg:#E3F2EC;
+  --amber:#6B3E0A; --amber-bg:#FDF0DC;
+  --coral:#7A2E1A; --coral-bg:#FCEAE4;
+  --green:#2A5C1A; --green-bg:#EAF5E2;
+  --red:#6B1A1A; --red-bg:#FCEAEA;
+}
+html { scroll-behavior: smooth; }
+body { background:var(--bg); color:var(--text); font-family:'Instrument Sans',sans-serif; font-size:16px; line-height:1.7; }
+
+/* NAV */
+nav { position:sticky; top:0; z-index:100; background:var(--bg); border-bottom:0.5px solid var(--border2); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:52px; }
+.nav-brand { font-family:'DM Serif Display',serif; font-size:15px; color:var(--text); text-decoration:none; }
+.nav-links { display:flex; gap:1.5rem; list-style:none; }
+.nav-links a { font-size:13px; color:var(--muted); text-decoration:none; }
+.nav-links a:hover { color:var(--text); }
+.nav-version { font-family:'DM Mono',monospace; font-size:10px; background:var(--accent2); color:#fff; padding:2px 7px; border-radius:4px; }
+
+/* LAYOUT */
+.wrap { max-width:960px; margin:0 auto; padding:3rem 2rem 6rem; }
+
+/* HERO */
+.eyebrow { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.08em; color:var(--muted); text-transform:uppercase; margin-bottom:1rem; }
+.post-title { font-family:'DM Serif Display',serif; font-size:clamp(34px,5.5vw,56px); font-weight:400; line-height:1.1; color:var(--text); margin-bottom:1rem; }
+.post-title em { font-style:italic; color:var(--accent2); }
+.meta-row { display:flex; flex-wrap:wrap; gap:.5rem 1.25rem; font-size:12px; color:var(--hint); font-family:'DM Mono',monospace; margin-bottom:1.5rem; }
+.meta-tag { background:var(--surface2); border-radius:4px; padding:2px 8px; color:var(--muted); }
+.hero-desc { font-size:15px; color:var(--muted); line-height:1.75; max-width:680px; margin-bottom:3rem; }
+
+/* DIVIDER */
+.divider { height:.5px; background:var(--border2); margin:3rem 0; }
+
+/* SECTION HEADER */
+.sec-label { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.06em; color:var(--hint); text-transform:uppercase; margin-bottom:.4rem; }
+.sec-title { font-family:'DM Serif Display',serif; font-size:26px; font-weight:400; color:var(--text); margin-bottom:.4rem; }
+.sec-sub { font-size:14px; color:var(--muted); margin-bottom:1.5rem; line-height:1.6; }
+
+/* SIGNAL CARDS */
+.signal-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:10px; margin-bottom:2rem; }
+.signal-card { background:var(--surface); border:0.5px solid var(--border); border-radius:12px; padding:1.1rem 1.25rem; border-top:3px solid; }
+.signal-card.red { border-top-color:#C0392B; } .signal-card.amber { border-top-color:#B8950A; } .signal-card.blue { border-top-color:#1A3A5C; }
+.signal-num { font-family:'DM Serif Display',serif; font-size:28px; color:var(--text); line-height:1; margin-bottom:4px; }
+.signal-label { font-size:13px; font-weight:600; color:var(--text); margin-bottom:4px; }
+.signal-body { font-size:12.5px; color:var(--muted); line-height:1.55; }
+
+.hint-text { font-size:13px; color:var(--hint); font-style:italic; margin-bottom:1.25rem; }
+
+/* STACK CARDS */
+.stack-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:10px; margin-bottom:1.25rem; }
+.stack-card { background:var(--surface); border:0.5px solid var(--border); border-radius:12px; padding:1.1rem 1.25rem; cursor:pointer; transition:border-color .15s,transform .1s,box-shadow .15s; position:relative; }
+.stack-card:hover { border-color:var(--border2); box-shadow:0 2px 12px rgba(0,0,0,.06); transform:translateY(-1px); }
+.stack-card.active { border:1.5px solid var(--accent2); box-shadow:0 0 0 3px rgba(45,106,79,.1); }
+.card-layer { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--hint); margin-bottom:2px; }
+.card-component { font-size:12px; color:var(--muted); margin-bottom:6px; }
+.badge { display:inline-block; font-size:11px; font-family:'DM Mono',monospace; padding:3px 9px; border-radius:4px; font-weight:500; margin-bottom:8px; }
+.b-blue{background:var(--blue-bg);color:var(--blue);} .b-purple{background:var(--purple-bg);color:var(--purple);} .b-teal{background:var(--teal-bg);color:var(--teal);}
+.b-amber{background:var(--amber-bg);color:var(--amber);} .b-coral{background:var(--coral-bg);color:var(--coral);} .b-green{background:var(--green-bg);color:var(--green);} .b-red{background:var(--red-bg);color:var(--red);}
+.card-name { font-size:15px; font-weight:600; color:var(--text); margin-bottom:5px; letter-spacing:-.01em; }
+.card-why { font-size:13px; color:var(--muted); line-height:1.5; }
+.expand-icon { position:absolute; top:1rem; right:1rem; width:20px; height:20px; border-radius:50%; border:0.5px solid var(--border2); display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--hint); transition:transform .2s,background .15s; }
+.stack-card.active .expand-icon { transform:rotate(45deg); background:var(--accent-light); color:var(--accent2); border-color:var(--accent2); }
+
+/* STACK DETAIL */
+.detail-panel { background:var(--surface); border:0.5px solid var(--border); border-left:3px solid var(--accent2); border-radius:12px; padding:1.5rem 1.75rem; margin-bottom:1.25rem; display:none; animation:fadeIn .2s ease; }
+.detail-panel.visible { display:block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;} }
+.detail-title { font-family:'DM Serif Display',serif; font-size:20px; font-weight:400; color:var(--text); margin-bottom:.5rem; }
+.detail-desc { font-size:14px; color:var(--muted); line-height:1.75; margin-bottom:1rem; }
+.detail-desc code { font-family:'DM Mono',monospace; font-size:12px; background:var(--surface2); padding:1px 5px; border-radius:3px; color:var(--text); }
+.detail-formats { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:1.25rem; }
+.detail-links { border-top:0.5px solid var(--border); padding-top:1rem; }
+.detail-links-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--hint); margin-bottom:8px; }
+.detail-links ul { list-style:none; display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:4px; }
+.detail-links ul li::before { content:"→ "; color:var(--accent2); font-size:12px; }
+.detail-links ul li a { font-size:13px; color:var(--accent2); text-decoration:none; }
+.detail-links ul li a:hover { text-decoration:underline; }
+
+/* COMPARISON TABLE */
+.comp-table { width:100%; border-collapse:collapse; font-size:13.5px; margin-bottom:2rem; }
+.comp-table th { text-align:left; font-size:11px; font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.05em; color:var(--hint); padding:8px 12px; border-bottom:0.5px solid var(--border2); font-weight:500; }
+.comp-table td { padding:10px 12px; border-bottom:0.5px solid var(--border); color:var(--muted); vertical-align:top; }
+.comp-table td:first-child { font-weight:600; color:var(--text); }
+.comp-table td.ai { color:var(--accent2); font-weight:500; }
+.comp-table tr:last-child td { border-bottom:none; }
+.comp-table tr:hover td { background:var(--surface2); }
+
+/* METRICS */
+.metrics-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; margin-bottom:2rem; }
+.metric-card { background:var(--surface); border:0.5px solid var(--border); border-radius:10px; padding:1rem 1.1rem; }
+.metric-num { font-family:'DM Serif Display',serif; font-size:30px; color:var(--accent2); line-height:1; margin-bottom:4px; }
+.metric-label { font-size:13px; font-weight:600; color:var(--text); margin-bottom:3px; }
+.metric-body { font-size:12px; color:var(--muted); line-height:1.5; }
+
+/* ═══════════════════════════════════════════════
+   AUDIENCE MATRIX SECTION
+   ═══════════════════════════════════════════════ */
+.matrix-intro { font-size:14px; color:var(--muted); margin-bottom:1.5rem; line-height:1.6; }
+.matrix-hint { font-size:13px; color:var(--hint); font-style:italic; margin-bottom:1.25rem; }
+
+.audience-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:1.5rem;
+}
+@media(max-width:680px){ .audience-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:440px){ .audience-grid { grid-template-columns:1fr; } }
+
+.aud-card {
+  background:var(--surface);
+  border:0.5px solid var(--border);
+  border-radius:12px;
+  padding:1rem 1.1rem 0.9rem;
+  cursor:pointer;
+  transition:border-color .15s, transform .1s, box-shadow .15s;
+  position:relative;
+}
+.aud-card:hover { border-color:var(--border2); box-shadow:0 2px 12px rgba(0,0,0,.06); transform:translateY(-1px); }
+.aud-card.active {
+  border:1.5px solid var(--accent2);
+  box-shadow:0 0 0 3px rgba(45,106,79,.1);
+}
+.aud-label { font-family:'DM Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--hint); margin-bottom:4px; }
+.aud-title { font-size:15px; font-weight:600; color:var(--text); margin-bottom:3px; line-height:1.3; }
+.aud-tool { font-size:12px; color:var(--muted); margin-top:6px; }
+.aud-arrow { position:absolute; bottom:0.8rem; right:1rem; font-size:14px; color:var(--hint); transition:transform .2s; }
+.aud-card.active .aud-arrow { transform:rotate(90deg); color:var(--accent2); }
+
+/* VISUALIZATION PANEL */
+.viz-panel {
+  display:none;
+  background:var(--surface);
+  border:0.5px solid var(--border);
+  border-left:3px solid var(--accent2);
+  border-radius:12px;
+  overflow:hidden;
+  margin-bottom:2rem;
+  animation:fadeIn .25s ease;
+}
+.viz-panel.visible { display:block; }
+
+.viz-header {
+  padding:1.1rem 1.5rem;
+  border-bottom:0.5px solid var(--border);
+  display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+  background:var(--surface2);
+}
+.vh-left { flex:1; min-width:200px; }
+.vh-audience { font-family:'DM Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--hint); margin-bottom:3px; }
+.vh-title { font-size:16px; font-weight:600; color:var(--text); margin-bottom:3px; }
+.vh-desc { font-size:13px; color:var(--muted); line-height:1.55; }
+.vh-badges { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+.vh-tool { font-family:'DM Mono',monospace; font-size:11px; padding:3px 9px; border-radius:4px; font-weight:500; }
+
+.viz-body { padding:1.5rem; overflow-x:auto; }
+.viz-body .mermaid { font-family:'DM Mono',monospace; min-width:0; }
+
+/* CODE BLOCK (ADR, agent.md, CLAUDE.md, Runbook) */
+.code-block {
+  background:#1A1917;
+  border-radius:8px;
+  padding:1.25rem 1.5rem;
+  overflow-x:auto;
+}
+.code-block pre {
+  font-family:'DM Mono',monospace;
+  font-size:12.5px;
+  line-height:1.65;
+  color:#D4CFC8;
+  white-space:pre;
+}
+.code-block .cm  { color:#6B7A6A; }  /* comment */
+.code-block .ck  { color:#7EB8A4; }  /* key / heading */
+.code-block .cv  { color:#D4A574; }  /* value / string */
+.code-block .cs  { color:#A8C4A2; }  /* section / status */
+.code-block .cc  { color:#E8C96A; }  /* code inline */
+.code-block .cn  { color:#BBA0E8; }  /* node name */
+
+/* EXCALIDRAW-STYLE SVG PANEL */
+.excali-wrap {
+  background:#FAFAF8;
+  border-radius:8px;
+  padding:1.5rem;
+  border:0.5px dashed var(--border2);
+  overflow-x:auto;
+}
+
+/* PRINCIPLES */
+.principle-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin-bottom:2rem; }
+.principle-card { background:var(--surface); border:0.5px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; }
+.p-num { font-family:'DM Serif Display',serif; font-size:36px; color:var(--border2); line-height:1; margin-bottom:6px; }
+.p-head { font-size:14px; font-weight:600; color:var(--text); margin-bottom:5px; }
+.p-body { font-size:13px; color:var(--muted); line-height:1.6; }
+
+.antipattern { background:#FEF9EC; border:0.5px solid #E8C96A; border-left:3px solid #B8950A; border-radius:10px; padding:1.1rem 1.25rem; font-size:13.5px; color:#5A4A0A; line-height:1.7; margin-bottom:2rem; }
+.antipattern strong { font-weight:600; }
+
+.cta-row { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:2rem; }
+.cta-item { background:var(--surface); border:0.5px solid var(--border); border-radius:10px; padding:1rem 1.25rem; flex:1; min-width:220px; }
+.cta-check { font-size:16px; color:var(--accent2); margin-bottom:4px; }
+.cta-title { font-size:14px; font-weight:600; color:var(--text); margin-bottom:3px; }
+.cta-body { font-size:13px; color:var(--muted); }
+
+footer { border-top:0.5px solid var(--border2); padding-top:1.5rem; margin-top:2rem; font-size:12px; color:var(--hint); font-family:'DM Mono',monospace; display:flex; justify-content:space-between; flex-wrap:wrap; gap:.5rem; }
+footer a { color:var(--accent2); text-decoration:none; }
+footer a:hover { text-decoration:underline; }
+
+@media(max-width:600px){ nav{padding:0 1rem;} .wrap{padding:2rem 1rem 4rem;} .nav-links{display:none;} }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="#">The Omni-Negotiator <span class="nav-version">v2.0</span></a>
+  <ul class="nav-links">
+    <li><a href="#signals">2026 Signals</a></li>
+    <li><a href="#stack">AT Stack</a></li>
+    <li><a href="#audience">Diagrams by Audience</a></li>
+    <li><a href="https://pardhuv-ai-commercial.github.io/linkedin-page/format-selection.html" target="_blank">Format Guide ↗</a></li>
+  </ul>
+</nav>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <p class="eyebrow">Agentic AI · Architecture Documentation · Singapore Property · April 2026</p>
+  <h1 class="post-title">Omni-Negotiator<br><em>AI Techstack Guide v2.0</em></h1>
+  <div class="meta-row">
+    <span>April 2026</span>
+    <span class="meta-tag">Multi-Agent System</span>
+    <span class="meta-tag">LangGraph</span>
+    <span class="meta-tag">Selective Growth Phase</span>
+    <span class="meta-tag">Singapore</span>
+  </div>
+  <p class="hero-desc">The 2026 Singapore property market has entered a "Selective Growth" phase — high volumes, tiered ABSD cooling measures, and a 93% surge in HDB MOP supply. A stateful, multimodal AI agent is no longer a luxury; it is the only way to navigate the complexity without human fatigue over a 3–6 month buying cycle.</p>
+
+  <!-- SECTION 01 — MARKET SIGNALS -->
+  <div id="signals">
+    <p class="sec-label">01 — 2026 Market Signals</p>
+    <h2 class="sec-title">The "Complexity Trap" driving the build</h2>
+    <p class="sec-sub">Three structural shifts that make manual property search inadequate as of April 2026.</p>
+  </div>
+  <div class="signal-grid">
+    <div class="signal-card red">
+      <div class="signal-num">20%</div>
+      <div class="signal-label">Luxury ABSD Wall (Feb 2026)</div>
+      <div class="signal-body">New tiered ABSD for properties above $3M — 20% for SC 2nd timers. Properties just above the threshold carry a significantly higher tax burden, making sub-$3M negotiation a financial necessity.</div>
+    </div>
+    <div class="signal-card amber">
+      <div class="signal-num">+93%</div>
+      <div class="signal-label">HDB MOP Supply Surge</div>
+      <div class="signal-body">13,480 HDB flats reaching 5-year MOP in 2026, concentrated in Punggol, Queenstown, and Tampines. A buyer's market — but requires high-speed filtering to isolate "investment alpha" units from supply-stagnated stock.</div>
+    </div>
+    <div class="signal-card blue">
+      <div class="signal-num">GFA</div>
+      <div class="signal-label">The Phantom Space Gap</div>
+      <div class="signal-body">Resale units (pre-2023) still carry "phantom space" (AC ledges, voids) in listed sqft. Human buyers overpay for non-livable areas; PSF cannot be normalized across old and new listings without AI.</div>
+    </div>
+  </div>
+
+  <div class="divider" id="stack"></div>
+
+  <!-- SECTION 02 — AT STACK -->
+  <p class="sec-label">02 — The AT Stack</p>
+  <h2 class="sec-title">Seven layers. Seven distinct roles.</h2>
+  <p class="sec-sub">Each tool selected for a specific job across a 3–6 month negotiation lifecycle. Click any card to see output format options and community resources.</p>
+  <p class="hint-text">↓ Click a card to expand the detail for that layer</p>
+
+  <div class="stack-grid">
+    <div class="stack-card" id="card-brain" onclick="toggleStack('brain')"><span class="expand-icon">+</span>
+      <div class="card-layer">Brain</div><div class="card-component">Orchestration</div>
+      <div class="badge b-purple">LangGraph</div>
+      <div class="card-name">Long-Term State Machine</div>
+      <div class="card-why">Pauses a negotiation for 2 months and resumes with full memory. Runs Discovery → Inspection → Drip → HITL without losing context.</div>
+    </div>
+    <div class="stack-card" id="card-cognition" onclick="toggleStack('cognition')"><span class="expand-icon">+</span>
+      <div class="card-layer">Cognition</div><div class="card-component">LLM</div>
+      <div class="badge b-blue">GPT-4o / GPT-5</div>
+      <div class="card-name">Singapore-Context Reasoning</div>
+      <div class="card-why">Natively understands ABSD tiers, En-bloc potential, GFA Harmonization, and SORA-stress-tested bidding logic.</div>
+    </div>
+    <div class="stack-card" id="card-hands" onclick="toggleStack('hands')"><span class="expand-icon">+</span>
+      <div class="card-layer">Hands</div><div class="card-component">Web Automation</div>
+      <div class="badge b-teal">Browser-use.ai</div>
+      <div class="card-name">Large Browser Model</div>
+      <div class="card-why">Scouts 1,000+ listings/day on PropertyGuru and 99.co — flags distress signals: units listed >120 days or sellers above the $3M ABSD cliff.</div>
+    </div>
+    <div class="stack-card" id="card-vision" onclick="toggleStack('vision')"><span class="expand-icon">+</span>
+      <div class="card-layer">Vision</div><div class="card-component">Multimodal RAG</div>
+      <div class="badge b-amber">Gemini 1.5 Pro</div>
+      <div class="card-name">GFA Phantom Space Detector</div>
+      <div class="card-why">Watches walkthrough videos and scans floor plans to calculate True Livable Area. Auto-discounts legacy GFA units — apples-to-apples PSF comparison.</div>
+    </div>
+    <div class="stack-card" id="card-memory" onclick="toggleStack('memory')"><span class="expand-icon">+</span>
+      <div class="card-layer">Memory</div><div class="card-component">Vector Database</div>
+      <div class="badge b-green">Supabase</div>
+      <div class="card-name">SQL + Vector in One</div>
+      <div class="card-why">Stores URA transaction prices in SQL; agent sentiment as pgvector embeddings. Never asks the same question twice to the same agent.</div>
+    </div>
+    <div class="stack-card" id="card-risk" onclick="toggleStack('risk')"><span class="expand-icon">+</span>
+      <div class="card-layer">Risk</div><div class="card-component">Legal Intelligence</div>
+      <div class="badge b-red">URA Master Plan Node</div>
+      <div class="card-name">View-Block & GLS Detector</div>
+      <div class="card-why">Cross-references listings with the 2025/2026 URA Master Plan. Flags if a new GLS site threatens the "unblocked view" before you fall in love with the unit.</div>
+    </div>
+    <div class="stack-card" id="card-voice" onclick="toggleStack('voice')"><span class="expand-icon">+</span>
+      <div class="card-layer">Voice</div><div class="card-component">Connectivity</div>
+      <div class="badge b-coral">Twilio WhatsApp</div>
+      <div class="card-name">Frictionless HITL Engagement</div>
+      <div class="card-why">Manages 3–6 month agent relationships via WhatsApp. Tap "Approve" to send — you stay in control without a laptop.</div>
+    </div>
+  </div>
+
+  <!-- STACK DETAIL PANELS -->
+  <div class="detail-panel" id="panel-brain">
+    <div class="detail-title">LangGraph — Orchestration output</div>
+    <div class="detail-desc">Produces an auto-generated state machine via <code>graph.get_graph().draw_mermaid()</code> — committed as a living artefact. The graph covers five nodes: Discovery, Vision-Legal Inspection, Drip Negotiation, HITL Approval Gate, and long-sleep pause states holding 7–60 days. Deployed 24/7 on Railway.app or Replit.</div>
+    <div class="detail-formats"><span class="badge b-purple">LangGraph state machine</span><span class="badge b-blue">Mermaid state diagram</span><span class="badge b-teal">LangSmith trace</span><span class="badge b-amber">agent.md spec file</span></div>
+    <div class="detail-links"><div class="detail-links-label">Community resources</div><ul>
+      <li><a href="https://python.langchain.com/docs/langgraph" target="_blank">LangGraph docs — draw_mermaid() export</a></li>
+      <li><a href="https://github.com/alirezadir/Agentic-AI-Systems" target="_blank">Agentic-AI-Systems — LangGraph architecture diagrams</a></li>
+      <li><a href="https://neurlcreators.substack.com/p/langgraph-agent-state-machine-review" target="_blank">LangGraph state machine review — Substack</a></li>
+      <li><a href="https://railway.app" target="_blank">Railway.app — deploy the LangGraph workflow 24/7</a></li>
+    </ul></div>
+  </div>
+  <div class="detail-panel" id="panel-cognition">
+    <div class="detail-title">GPT-4o / GPT-5 — LLM output</div>
+    <div class="detail-desc">Produces Game Theory bid sequences, data-backed negotiation justifications, and ABSD-tier-aware price sensitivity analysis. Each output logged with prompt, model version, and token count in Supabase's <code>negotiation_logs</code>. Document the model selection decision as an ADR — why GPT-5 over Claude or Gemini.</div>
+    <div class="detail-formats"><span class="badge b-blue">ADR — model selection</span><span class="badge b-purple">agent.md system prompt</span><span class="badge b-teal">CLAUDE.md runtime context</span><span class="badge b-amber">Runbook — token budget</span></div>
+    <div class="detail-links"><div class="detail-links-label">Community resources</div><ul>
+      <li><a href="https://adr.github.io" target="_blank">adr.github.io — canonical ADR resource</a></li>
+      <li><a href="https://github.com/joelparkerhenderson/architecture-decision-record" target="_blank">20+ ADR templates and examples</a></li>
+      <li><a href="https://adolfi.dev/blog/ai-generated-adr/" target="_blank">AI-generated ADRs — Claude writes ADRs from codebase</a></li>
+      <li><a href="https://platform.openai.com" target="_blank">platform.openai.com — generate API key, set $50/mo limit</a></li>
+    </ul></div>
+  </div>
+  <div class="detail-panel" id="panel-hands">
+    <div class="detail-title">Browser-use.ai — Web Automation output</div>
+    <div class="detail-desc">Scouts PropertyGuru and 99.co daily — 1,000+ listings filtered to the top 2% meeting Exit Horizon criteria. Cross-references with Stacked Homes and URA Transaction data. Structured payload written to <code>listings_master</code> in Supabase. Deliver a Mermaid sequence diagram of the full scrape → enrich → filter → Morning Brief cycle.</div>
+    <div class="detail-formats"><span class="badge b-teal">Mermaid sequence diagram</span><span class="badge b-blue">ADR — Browser-use vs Playwright</span><span class="badge b-purple">agent.md scraper config</span><span class="badge b-green">Runbook — anti-bot ops</span></div>
+    <div class="detail-links"><div class="detail-links-label">Community resources</div><ul>
+      <li><a href="https://mermaid.live" target="_blank">mermaid.live — free online sequence diagram editor</a></li>
+      <li><a href="https://github.com/joserprieto/ai-diagrams-toolkit" target="_blank">ai-diagrams-toolkit — Mermaid templates for AI systems</a></li>
+      <li><a href="https://mermaid.js.org/syntax/flowchart.html" target="_blank">Official Mermaid flowchart syntax reference</a></li>
+    </ul></div>
+  </div>
+  <div class="detail-panel" id="panel-vision">
+    <div class="detail-title">Gemini 1.5 Pro — Vision + GFA Inspector output</div>
+    <div class="detail-desc">Watches walkthrough videos and scans floor plans to calculate True Livable Area vs. Legacy GFA "phantom space." Output: a "Digital Inspection Report" — "12% of GFA is AC Ledge/Balcony. Recommend −5% bid." Delivered via WhatsApp and stored in Supabase. Use a C4 Component diagram to show how Vision connects to Orchestrator, Risk, Memory, and Communication.</div>
+    <div class="detail-formats"><span class="badge b-amber">C4 Component diagram</span><span class="badge b-blue">Mermaid flowchart</span><span class="badge b-purple">arc42 §8 — concepts</span><span class="badge b-teal">Inspection Report (md)</span></div>
+    <div class="detail-links"><div class="detail-links-label">Community resources</div><ul>
+      <li><a href="https://github.com/jonverrier/C4Diagrammer" target="_blank">C4-Agent — auto-generates C4 + Mermaid from code</a></li>
+      <li><a href="https://c4model.com" target="_blank">c4model.com — official guide by Simon Brown</a></li>
+      <li><a href="https://docs.cloud.google.com/architecture/agentic-ai-overview" target="_blank">Google Cloud Agentic AI Architecture Center</a></li>
+    </ul></div>
+  </div>
+  <div class="detail-panel" id="panel-memory">
+    <div class="detail-title">Supabase — Memory + Audit Log output</div>
+    <div class="detail-desc"><code>listings_master</code> (price/date/MOP/GLS via SQL) and <code>negotiation_logs</code> (every message, analysis, and price revision — the full 6-month audit trail). pgvector stores agent sentiment embeddings for semantic search. Ensures the AI never asks the same question twice to the same agent over the full negotiation lifecycle.</div>
+    <div class="detail-formats"><span class="badge b-green">Mermaid ERD</span><span class="badge b-blue">ADR — Supabase vs Pinecone</span><span class="badge b-teal">arc42 §5 — building block</span><span class="badge b-amber">Runbook — backup & restore</span></div>
+    <div class="detail-links"><div class="detail-links-label">Community resources</div><ul>
+      <li><a href="https://supabase.com" target="_blank">supabase.com — create project, initialize two tables</a></li>
+      <li><a href="https://mermaid.js.org/syntax/entityRelationshipDiagram.html" target="_blank">Mermaid ERD syntax reference</a></li>
+      <li><a href="https://langfuse.com/docs" target="_blank">Langfuse docs — open-source agent observability</a></li>
+    </ul></div>
+  </div>
+  <div class="detail-panel" id="panel-risk">
+    <div class="detail-title">URA Master Plan Node — Risk Intelligence output</div>
+    <div class="detail-desc">Indexes the 2025/2026 URA Master Plan and active GLS sites. For every shortlisted listing, checks whether a gazetted GLS site or rezoning could block the view or reduce land value within the investment horizon. Output: a risk flag in the Digital Inspection Report. Pair with arc42 §10 documenting the 100% risk-flag success metric.</div>
+    <div class="detail-formats"><span class="badge b-red">arc42 §10 — risk register</span><span class="badge b-blue">ADR — URA data integration</span><span class="badge b-purple">C4 deployment diagram</span><span class="badge b-teal">Runbook — GLS update cycle</span></div>
+    <div class="detail-links"><div class="detail-links-label">Community resources</div><ul>
+      <li><a href="https://www.ura.gov.sg/maps/" target="_blank">URA SPACE — Master Plan and GLS data</a></li>
+      <li><a href="https://arc42.org/overview" target="_blank">arc42.org — §10 quality requirements template</a></li>
+      <li><a href="https://smith.langchain.com/docs" target="_blank">LangSmith — tracing risk node decisions</a></li>
+    </ul></div>
+  </div>
+  <div class="detail-panel" id="panel-voice">
+    <div class="detail-title">Twilio WhatsApp — HITL Connectivity output</div>
+    <div class="detail-desc">Sends the daily "Morning Brief," Digital Inspection Reports, and HITL approval requests. Receives inbound agent replies. HITL gate: tap "Approve" to send. Uses Game Theory: if a property is on market >90 days, triggers a "Low-Ball" sequence with data-backed justifications. Link your SG mobile number to the Twilio Sandbox to begin.</div>
+    <div class="detail-formats"><span class="badge b-coral">Mermaid sequence — HITL</span><span class="badge b-blue">PlantUML deployment</span><span class="badge b-purple">ADR — communication layer</span><span class="badge b-teal">Runbook — Twilio sandbox</span></div>
+    <div class="detail-links"><div class="detail-links-label">Community resources</div><ul>
+      <li><a href="https://plantuml.com/sequence-diagram" target="_blank">PlantUML sequence diagram — agent turn flows</a></li>
+      <li><a href="https://www.twilio.com/en-us/whatsapp" target="_blank">Twilio WhatsApp Business API — register SG number</a></li>
+      <li><a href="https://smith.langchain.com/docs" target="_blank">LangSmith — tracing approvals and turn flows</a></li>
+    </ul></div>
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <div class="divider"></div>
+  <p class="sec-label">03 — Strategic value</p>
+  <h2 class="sec-title">Human effort vs. AI agent advantage</h2>
+  <p class="sec-sub">Five dimensions where the Omni-Negotiator outperforms traditional property search in the 2026 market.</p>
+  <table class="comp-table">
+    <thead><tr><th>Feature</th><th>Human (Traditional)</th><th>AI Agent Advantage (2026)</th></tr></thead>
+    <tbody>
+      <tr><td>Search Volume</td><td>~20 listings/week</td><td class="ai">1,000+ listings/day (automated)</td></tr>
+      <tr><td>Tax Intelligence</td><td>Manual ABSD calculation</td><td class="ai">Auto-flags "ABSD Cliff" properties above $3M</td></tr>
+      <tr><td>Floor Plan Analysis</td><td>Subjective "feel" for space</td><td class="ai">Precise % of usable vs. phantom (AC ledge) space</td></tr>
+      <tr><td>Market Context</td><td>Relies on agent's word</td><td class="ai">Real-time URA + Master Plan indexing</td></tr>
+      <tr><td>Negotiation</td><td>High stress / emotional bias</td><td class="ai">Cold, data-backed 3.5% SORA-stress-tested bidding</td></tr>
+    </tbody>
+  </table>
+  <div class="metrics-grid">
+    <div class="metric-card"><div class="metric-num">70%</div><div class="metric-label">Lead-to-Viewing Efficiency</div><div class="metric-body">Reduction in junk viewings via AI-driven floor plan and video pre-screening.</div></div>
+    <div class="metric-card"><div class="metric-num">3–5%</div><div class="metric-label">Purchase Alpha Target</div><div class="metric-body">Below initial asking price via persistent follow-up and data-backed counter-offering.</div></div>
+    <div class="metric-card"><div class="metric-num">100%</div><div class="metric-label">Risk Flag Success Rate</div><div class="metric-body">Construction and blocked-view risks flagged via URA Master Plan before any offer.</div></div>
+    <div class="metric-card"><div class="metric-num">60s</div><div class="metric-label">Zero Lead Decay</div><div class="metric-body">AI responds to new listings within 60 seconds. No lead goes cold.</div></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SECTION 04 — AUDIENCE MATRIX WITH VISUALIZATIONS
+       ═══════════════════════════════════════════════ -->
+  <div class="divider" id="audience"></div>
+  <p class="sec-label">04 — Format selection matrix</p>
+  <h2 class="sec-title">Pick by audience and purpose</h2>
+  <p class="sec-sub">The community's rule of thumb: one format per audience. Each box below opens the actual visualization of the Omni-Negotiator stack, rendered in the tool recommended by the <a href="https://pardhuv-ai-commercial.github.io/linkedin-page/format-selection.html" target="_blank" style="color:var(--accent2)">format selection guide</a> for that audience.</p>
+  <p class="matrix-hint">↓ Click any audience box to see its stack diagram rendered in the recommended tool</p>
+
+  <div class="audience-grid">
+
+    <div class="aud-card" id="acard-csuite" onclick="toggleAud('csuite')">
+      <div class="aud-label">C-suite / board</div>
+      <div class="aud-title">1-page PDF or slide deck</div>
+      <div class="aud-tool">Tool: draw.io / Excalidraw → PNG export</div>
+      <span class="aud-arrow">›</span>
+    </div>
+
+    <div class="aud-card" id="acard-cto" onclick="toggleAud('cto')">
+      <div class="aud-label">CTO / enterprise architects</div>
+      <div class="aud-title">arc42 + C4 diagrams</div>
+      <div class="aud-tool">Tool: C4 Context + Container · Mermaid</div>
+      <span class="aud-arrow">›</span>
+    </div>
+
+    <div class="aud-card" id="acard-engr" onclick="toggleAud('engr')">
+      <div class="aud-label">Engineering leads</div>
+      <div class="aud-title">ADR files in /docs/decisions/</div>
+      <div class="aud-tool">Tool: Mermaid sequence / flowchart inline</div>
+      <span class="aud-arrow">›</span>
+    </div>
+
+    <div class="aud-card" id="acard-dev" onclick="toggleAud('dev')">
+      <div class="aud-label">Developers (building agents)</div>
+      <div class="aud-title">agent.md spec + README.md</div>
+      <div class="aud-tool">Tool: LangGraph visualiser + Mermaid</div>
+      <span class="aud-arrow">›</span>
+    </div>
+
+    <div class="aud-card" id="acard-agent" onclick="toggleAud('agent')">
+      <div class="aud-label">AI agents themselves</div>
+      <div class="aud-title">CLAUDE.md / AGENTS.md</div>
+      <div class="aud-tool">Tool: Mermaid flowcharts as execution contracts</div>
+      <span class="aud-arrow">›</span>
+    </div>
+
+    <div class="aud-card" id="acard-mlops" onclick="toggleAud('mlops')">
+      <div class="aud-label">MLOps / AI Ops</div>
+      <div class="aud-title">Runbook + dashboard configs</div>
+      <div class="aud-tool">Tool: PlantUML sequence · LangSmith</div>
+      <span class="aud-arrow">›</span>
+    </div>
+
+    <div class="aud-card" id="acard-sec" onclick="toggleAud('sec')">
+      <div class="aud-label">Security / compliance</div>
+      <div class="aud-title">arc42 §10–12 + ADRs</div>
+      <div class="aud-tool">Tool: C4 Deployment + trust boundaries</div>
+      <span class="aud-arrow">›</span>
+    </div>
+
+    <div class="aud-card" id="acard-product" onclick="toggleAud('product')">
+      <div class="aud-label">Product / business</div>
+      <div class="aud-title">Confluence page with Mermaid</div>
+      <div class="aud-tool">Tool: Mermaid BPMN-style flowchart</div>
+      <span class="aud-arrow">›</span>
+    </div>
+
+  </div><!-- end audience-grid -->
+
+  <!-- ─── VIZ PANEL: C-suite / draw.io style ─── -->
+  <div class="viz-panel" id="vpanel-csuite">
+    <div class="viz-header">
+      <div class="vh-left">
+        <div class="vh-audience">C-suite / Board · Strategic alignment</div>
+        <div class="vh-title">Omni-Negotiator — One-page system overview</div>
+        <div class="vh-desc">Hand-crafted in draw.io / Excalidraw. No technical jargon. Shows what the system does and who it talks to — not how. Exported as PNG for a board slide or PowerPoint deck.</div>
+        <div class="vh-badges">
+          <span class="vh-tool b-teal badge">draw.io / Excalidraw</span>
+          <span class="vh-tool b-amber badge">PNG export → slides</span>
+          <span class="vh-tool b-blue badge">PowerPoint / Keynote</span>
+        </div>
+      </div>
+    </div>
+    <div class="viz-body">
+      <div class="excali-wrap">
+        <svg viewBox="0 0 820 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:820px;font-family:'Instrument Sans',sans-serif;">
+          <!-- sketch-style borders via slight imperfection -->
+          <defs>
+            <filter id="sketch"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="1.2" xChannelSelector="R" yChannelSelector="G"/></filter>
+          </defs>
+          <!-- background -->
+          <rect width="820" height="400" fill="#FAFAF8" rx="8"/>
+          <!-- title -->
+          <text x="410" y="32" text-anchor="middle" font-size="15" font-weight="600" fill="#1A1917" font-family="'DM Serif Display',serif">Omni-Negotiator — How it works for you</text>
+          <text x="410" y="50" text-anchor="middle" font-size="11" fill="#9B9890">Singapore Property · April 2026 · draw.io / Excalidraw export</text>
+
+          <!-- BUYER box -->
+          <rect x="30" y="80" width="130" height="70" rx="10" fill="#E8EFF7" stroke="#1A3A5C" stroke-width="1.5" filter="url(#sketch)"/>
+          <text x="95" y="112" text-anchor="middle" font-size="13" font-weight="600" fill="#1A3A5C">You</text>
+          <text x="95" y="128" text-anchor="middle" font-size="11" fill="#1A3A5C">(Property Buyer)</text>
+          <text x="95" y="144" text-anchor="middle" font-size="10" fill="#1A3A5C">Reviews briefs</text>
+
+          <!-- OMNI box (centre) -->
+          <rect x="290" y="60" width="240" height="130" rx="12" fill="#E8F0EB" stroke="#2D6A4F" stroke-width="2" filter="url(#sketch)"/>
+          <text x="410" y="90" text-anchor="middle" font-size="14" font-weight="600" fill="#1A3A2A" font-family="'DM Serif Display',serif">Omni-Negotiator AI</text>
+          <text x="410" y="108" text-anchor="middle" font-size="11" fill="#2D6A4F">Scouts · Inspects · Negotiates</text>
+          <text x="410" y="126" text-anchor="middle" font-size="10" fill="#6B6860">1,000+ listings/day · 24/7</text>
+          <text x="410" y="142" text-anchor="middle" font-size="10" fill="#6B6860">Flags ABSD cliffs · GFA phantom space</text>
+          <text x="410" y="158" text-anchor="middle" font-size="10" fill="#6B6860">Manages 3–6 month relationships</text>
+          <text x="410" y="176" text-anchor="middle" font-size="10" font-weight="600" fill="#2D6A4F">Powered by LangGraph + GPT-5</text>
+
+          <!-- AGENT box -->
+          <rect x="660" y="80" width="130" height="70" rx="10" fill="#FCEAE4" stroke="#7A2E1A" stroke-width="1.5" filter="url(#sketch)"/>
+          <text x="725" y="112" text-anchor="middle" font-size="13" font-weight="600" fill="#7A2E1A">Seller Agent</text>
+          <text x="725" y="128" text-anchor="middle" font-size="11" fill="#7A2E1A">SG Property Agent</text>
+          <text x="725" y="144" text-anchor="middle" font-size="10" fill="#7A2E1A">Manages listings</text>
+
+          <!-- EXTERNAL SYSTEMS row -->
+          <!-- PropertyGuru -->
+          <rect x="60" y="290" width="130" height="60" rx="8" fill="#F0EDE6" stroke="#9B9890" stroke-width="1" filter="url(#sketch)"/>
+          <text x="125" y="318" text-anchor="middle" font-size="12" font-weight="600" fill="#1A1917">PropertyGuru</text>
+          <text x="125" y="335" text-anchor="middle" font-size="10" fill="#6B6860">99.co · Live listings</text>
+
+          <!-- URA -->
+          <rect x="230" y="290" width="130" height="60" rx="8" fill="#F0EDE6" stroke="#9B9890" stroke-width="1" filter="url(#sketch)"/>
+          <text x="295" y="316" text-anchor="middle" font-size="12" font-weight="600" fill="#1A1917">URA Data</text>
+          <text x="295" y="332" text-anchor="middle" font-size="10" fill="#6B6860">Transactions</text>
+          <text x="295" y="346" text-anchor="middle" font-size="10" fill="#6B6860">Master Plan · GLS</text>
+
+          <!-- WhatsApp -->
+          <rect x="400" y="290" width="130" height="60" rx="8" fill="#F0EDE6" stroke="#9B9890" stroke-width="1" filter="url(#sketch)"/>
+          <text x="465" y="316" text-anchor="middle" font-size="12" font-weight="600" fill="#1A1917">WhatsApp</text>
+          <text x="465" y="332" text-anchor="middle" font-size="10" fill="#6B6860">Morning Brief</text>
+          <text x="465" y="346" text-anchor="middle" font-size="10" fill="#6B6860">HITL Approvals</text>
+
+          <!-- Supabase -->
+          <rect x="570" y="290" width="130" height="60" rx="8" fill="#F0EDE6" stroke="#9B9890" stroke-width="1" filter="url(#sketch)"/>
+          <text x="635" y="316" text-anchor="middle" font-size="12" font-weight="600" fill="#1A1917">Supabase</text>
+          <text x="635" y="332" text-anchor="middle" font-size="10" fill="#6B6860">listings_master</text>
+          <text x="635" y="346" text-anchor="middle" font-size="10" fill="#6B6860">negotiation_logs</text>
+
+          <!-- ARROWS buyer ↔ omni -->
+          <line x1="160" y1="115" x2="289" y2="115" stroke="#1A3A5C" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+          <line x1="289" y1="130" x2="160" y2="130" stroke="#2D6A4F" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr2)"/>
+          <text x="224" y="110" text-anchor="middle" font-size="9" fill="#9B9890">Approves</text>
+          <text x="224" y="145" text-anchor="middle" font-size="9" fill="#9B9890">Morning Brief</text>
+
+          <!-- ARROWS omni ↔ agent -->
+          <line x1="531" y1="115" x2="659" y2="115" stroke="#7A2E1A" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr3)"/>
+          <line x1="659" y1="130" x2="531" y2="130" stroke="#2D6A4F" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr2)"/>
+          <text x="595" y="110" text-anchor="middle" font-size="9" fill="#9B9890">Negotiates</text>
+          <text x="595" y="145" text-anchor="middle" font-size="9" fill="#9B9890">WhatsApp</text>
+
+          <!-- ARROWS omni → external -->
+          <line x1="360" y1="190" x2="125" y2="289" stroke="#9B9890" stroke-width="1" stroke-dasharray="4,3"/>
+          <line x1="390" y1="190" x2="295" y2="289" stroke="#9B9890" stroke-width="1" stroke-dasharray="4,3"/>
+          <line x1="420" y1="190" x2="465" y2="289" stroke="#9B9890" stroke-width="1" stroke-dasharray="4,3"/>
+          <line x1="450" y1="190" x2="635" y2="289" stroke="#9B9890" stroke-width="1" stroke-dasharray="4,3"/>
+
+          <!-- arrowheads -->
+          <defs>
+            <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#1A3A5C"/></marker>
+            <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#2D6A4F"/></marker>
+            <marker id="arr3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#7A2E1A"/></marker>
+          </defs>
+
+          <!-- legend -->
+          <text x="30" y="385" font-size="10" fill="#9B9890">Rendered in: draw.io / Excalidraw style · Export as PNG for board slides · No technical jargon</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VIZ PANEL: CTO / C4 Container ─── -->
+  <div class="viz-panel" id="vpanel-cto">
+    <div class="viz-header">
+      <div class="vh-left">
+        <div class="vh-audience">CTO / Enterprise Architects · Architecture review</div>
+        <div class="vh-title">C4 Container — Deployable units and data flows</div>
+        <div class="vh-desc">arc42 markdown + C4 Container diagram rendered in Mermaid. Shows every running component, its technology, and how data moves between them. The standard format for an architecture review board.</div>
+        <div class="vh-badges">
+          <span class="vh-tool b-purple badge">C4 Container</span>
+          <span class="vh-tool b-teal badge">Mermaid in Markdown</span>
+          <span class="vh-tool b-blue badge">Structurizr / MkDocs</span>
+        </div>
+      </div>
+    </div>
+    <div class="viz-body">
+      <div class="mermaid">
+flowchart TB
+  subgraph buyer["👤 Buyer — Human in the Loop"]
+    WA_IN["WhatsApp\nMorning Brief + HITL Approvals"]
+  end
+
+  subgraph omni["🤖 Omni-Negotiator System  ·  Railway.app / Replit  ·  Python / LangGraph"]
+    direction LR
+    ORCH["🧠 LangGraph\nOrchestrator\nStateful graph"]
+    SCOUT["🖐 Browser-use.ai\nScouting Node\nLarge Browser Model"]
+    VISION["👁 Vision-Legal Node\nGemini 1.5 Pro\nMultimodal RAG"]
+    RISK["⚠️ Risk Node\nURA Master Plan\nGLS cross-reference"]
+    NEG["💬 Negotiation Node\nGPT-5 + Game Theory\nDrip sequencing"]
+    COMM["📱 Twilio Connector\nWhatsApp Business\nHITL gate"]
+  end
+
+  subgraph data["🗄 Data Layer  ·  Supabase Cloud"]
+    SQL["listings_master\nPostgres SQL\nPrices · MOP · GLS"]
+    VEC["negotiation_logs\npgvector\nSentiment embeddings"]
+  end
+
+  subgraph ext["🌐 External APIs"]
+    PG["PropertyGuru / 99.co"]
+    URA["URA API + Master Plan"]
+    OAI["OpenAI GPT-5"]
+    GEM["Google Gemini API"]
+    TWL["Twilio WhatsApp API"]
+  end
+
+  WA_IN <-->|"Approve / Review"| COMM
+  ORCH --> SCOUT & VISION & RISK & NEG & COMM
+  SCOUT --> SQL
+  NEG & VISION --> VEC
+  SCOUT <--> PG
+  RISK <--> URA
+  NEG <--> OAI
+  VISION <--> GEM
+  COMM <--> TWL
+
+  style omni fill:#F0EDE6,stroke:#2D6A4F,stroke-width:1.5px
+  style data fill:#E8F0EB,stroke:#2D6A4F,stroke-width:1px
+  style buyer fill:#E8EFF7,stroke:#1A3A5C,stroke-width:1px
+  style ext fill:#F7F5F0,stroke:#9B9890,stroke-width:0.5px
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VIZ PANEL: Engineering leads / ADR ─── -->
+  <div class="viz-panel" id="vpanel-engr">
+    <div class="viz-header">
+      <div class="vh-left">
+        <div class="vh-audience">Engineering leads · Design decisions</div>
+        <div class="vh-title">ADR-001 — LangGraph selected as orchestration layer</div>
+        <div class="vh-desc">One Architecture Decision Record per key choice. Lives in <code>/docs/decisions/</code> alongside a Mermaid sequence flowchart showing the scrape-to-brief pipeline. Immutable once merged — the "why" is captured forever.</div>
+        <div class="vh-badges">
+          <span class="vh-tool b-blue badge">ADR markdown</span>
+          <span class="vh-tool b-teal badge">Mermaid sequence inline</span>
+          <span class="vh-tool b-green badge">VS Code · GitHub · madr</span>
+        </div>
+      </div>
+    </div>
+    <div class="viz-body">
+      <div class="code-block">
+        <pre><span class="ck"># ADR-001: LangGraph as orchestration layer</span>
+
+<span class="cs">Status:</span>   <span class="cv">Accepted</span>
+<span class="cs">Date:</span>     <span class="cv">2026-04-06</span>
+<span class="cs">Deciders:</span> <span class="cv">Tech Lead, AI Architect</span>
+
+<span class="ck">## Context</span>
+The Omni-Negotiator must maintain active negotiation state across
+a 3–6 month buying cycle. Standard chatbots and CrewAI lose context
+between sessions. The system must pause for weeks (agent unresponsive)
+and resume with full memory of every prior message and price revision.
+
+<span class="ck">## Options considered</span>
+<span class="cm">| Option        | Stateful | Long-sleep | Human-in-loop | Verdict |</span>
+<span class="cm">|---------------|----------|------------|---------------|---------|</span>
+<span class="cv">| LangGraph     | ✅ Yes   | ✅ Yes     | ✅ Native     | CHOSEN  |</span>
+<span class="cm">| CrewAI        | Partial  | ❌ No      | Manual        | Reject  |</span>
+<span class="cm">| AutoGen       | ❌ No    | ❌ No      | Limited       | Reject  |</span>
+<span class="cm">| LangChain     | ❌ No    | ❌ No      | Manual        | Reject  |</span>
+
+<span class="ck">## Decision</span>
+Use <span class="cc">LangGraph</span> as the orchestration layer. Export the agent graph via
+<span class="cc">graph.get_graph().draw_mermaid()</span> and commit as a living artefact.
+Deploy on <span class="cc">Railway.app</span> for 24/7 operation without local machine dependency.
+
+<span class="ck">## Consequences</span>
++ Long-term negotiation state preserved across sessions
++ HITL approval gate built natively into graph edges
++ Auto-generated state machine diagram doubles as documentation
+- Steeper learning curve than CrewAI for new team members
+- Requires Python 3.11+ and LangSmith for observability</pre>
+      </div>
+      <div style="margin-top:1rem;">
+        <div class="mermaid">
+sequenceDiagram
+  autonumber
+  participant Scout as Browser-use.ai (Scout)
+  participant DB as Supabase (listings_master)
+  participant Orch as LangGraph Orchestrator
+  participant WA as WhatsApp (Buyer HITL)
+
+  Scout->>DB: Write 1,000+ raw listings (daily scrape)
+  DB-->>Orch: Query top 2% — ABSD cliff + MOP flags
+  Orch->>Orch: Score by Exit Horizon criteria
+  Orch->>WA: Send Morning Brief (top 3 units)
+  WA-->>Orch: Buyer selects unit for inspection
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VIZ PANEL: Developers / LangGraph state machine ─── -->
+  <div class="viz-panel" id="vpanel-dev">
+    <div class="viz-header">
+      <div class="vh-left">
+        <div class="vh-audience">Developers (building agents) · Implementation guide</div>
+        <div class="vh-title">agent.md + LangGraph state machine export</div>
+        <div class="vh-desc">Auto-generated from code via <code>graph.get_graph().draw_mermaid()</code>. Not drawn by hand — this is the actual agent graph, committed as a living artefact alongside the agent.md spec file. Paired with LangSmith for observability.</div>
+        <div class="vh-badges">
+          <span class="vh-tool b-purple badge">LangGraph visualiser</span>
+          <span class="vh-tool b-teal badge">agent.md spec</span>
+          <span class="vh-tool b-amber badge">LangSmith · Python</span>
+        </div>
+      </div>
+    </div>
+    <div class="viz-body">
+      <div class="code-block" style="margin-bottom:1rem;">
+        <pre><span class="ck"># agent.md — Omni-Negotiator spec</span>
+
+<span class="cs">model:</span>        <span class="cv">gpt-5 (openai)</span>
+<span class="cs">vision_model:</span> <span class="cv">gemini-1.5-pro</span>
+<span class="cs">orchestrator:</span> <span class="cv">langgraph==0.2.x</span>
+<span class="cs">memory:</span>       <span class="cv">supabase (postgres + pgvector)</span>
+
+<span class="cs">tools:</span>
+  - <span class="cn">browser_use</span>   <span class="cm"># PropertyGuru / 99.co scraping</span>
+  - <span class="cn">gemini_vision</span> <span class="cm"># floor plan + video analysis</span>
+  - <span class="cn">ura_api</span>       <span class="cm"># URA transactions + master plan</span>
+  - <span class="cn">twilio_wa</span>     <span class="cm"># WhatsApp send/receive</span>
+  - <span class="cn">supabase_rw</span>   <span class="cm"># listings_master + negotiation_logs</span>
+
+<span class="cs">approval_gates:</span>
+  - <span class="cv">hitl_whatsapp</span>  <span class="cm"># buyer must tap Approve before any send</span>
+
+<span class="cs">sleep_config:</span>
+  <span class="cs">no_reply_days:</span>  <span class="cv">7</span>
+  <span class="cs">stalled_days:</span>   <span class="cv">14</span>
+  <span class="cs">max_hold_days:</span>  <span class="cv">60</span>
+
+<span class="cs">observability:</span>  <span class="cv">langsmith</span>
+<span class="cs">rollback:</span>       <span class="cv">git revert + supabase point-in-time restore</span></pre>
+      </div>
+      <div class="mermaid">
+stateDiagram-v2
+  [*] --> Discovery
+
+  Discovery --> SignalFilter : 1,000+ listings scraped
+  SignalFilter --> Shortlist : top 2% pass — ABSD cliff + MOP flags
+  SignalFilter --> Discovery : no qualifying units
+
+  Shortlist --> VisionInspection : request floor plan / video
+  VisionInspection --> InspectionReport : GFA phantom space calculated
+  InspectionReport --> RiskCheck
+
+  RiskCheck --> HITLReview : no GLS risk
+  RiskCheck --> Discard : view-block risk detected
+
+  HITLReview --> AwaitApproval : draft sent via WhatsApp
+  AwaitApproval --> DripNegotiation : buyer APPROVES
+  AwaitApproval --> Discard : buyer rejects
+
+  DripNegotiation --> Sleep7 : no agent reply
+  Sleep7 --> DripNegotiation : resume after 7 days
+  DripNegotiation --> LowBall : on market > 90 days
+  LowBall --> HITLReview : low-ball draft ready
+
+  DripNegotiation --> OfferStage : agent engages
+  OfferStage --> HITLReview : final offer ready
+  OfferStage --> Sleep14 : stalled
+  Sleep14 --> OfferStage : resume after 14 days
+  OfferStage --> [*] : deal closed or abandoned
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VIZ PANEL: AI agents / CLAUDE.md ─── -->
+  <div class="viz-panel" id="vpanel-agent">
+    <div class="viz-header">
+      <div class="vh-left">
+        <div class="vh-audience">AI agents themselves · Runtime context</div>
+        <div class="vh-title">CLAUDE.md / AGENTS.md — Execution contract</div>
+        <div class="vh-desc">Repo-root instruction file consumed by the AI agent at runtime. Machine-readable and human-readable. The embedded Mermaid flowchart acts as an execution contract — the agent reads the decision tree before taking any action. Pioneered by Claude Code and OpenAI Codex.</div>
+        <div class="vh-badges">
+          <span class="vh-tool b-teal badge">CLAUDE.md / AGENTS.md</span>
+          <span class="vh-tool b-purple badge">Mermaid as execution contract</span>
+          <span class="vh-tool b-blue badge">Claude Code · Codex · Cursor</span>
+        </div>
+      </div>
+    </div>
+    <div class="viz-body">
+      <div class="code-block" style="margin-bottom:1rem;">
+        <pre><span class="ck"># CLAUDE.md — Omni-Negotiator runtime instructions</span>
+
+<span class="cm">## Purpose</span>
+You are the Omni-Negotiator AI. You scout Singapore property listings,
+inspect floor plans for GFA phantom space, assess URA risk, and manage
+long-term WhatsApp negotiations on behalf of the buyer.
+
+<span class="cm">## Critical rules</span>
+- NEVER send a WhatsApp message without explicit buyer HITL approval
+- ALWAYS normalize PSF using True Livable Area (exclude AC ledges)
+- Flag any property priced above $3M (ABSD cliff — 20% for SC 2nd timers)
+- Cross-reference every shortlisted unit against URA Master Plan GLS sites
+- If no agent reply in 7 days: enter Sleep state, log in negotiation_logs
+
+<span class="cm">## Decision flowchart (read before every action)</span>
+<span class="cm">```mermaid</span></pre>
+      </div>
+      <div class="mermaid">
+flowchart TD
+  A([New listing detected]) --> B{PSF above ABSD cliff?}
+  B -->|Yes — above $3M| C[⚠️ Flag ABSD cliff\nAdd to report]
+  B -->|No| D{GFA phantom space > 10%?}
+  C --> D
+  D -->|Yes| E[Deduct from bid\n-1% per 2% phantom GFA]
+  D -->|No| F{URA GLS site within 500m?}
+  E --> F
+  F -->|Yes| G[⛔ Flag view-block risk\nAuto-discard unless buyer overrides]
+  F -->|No| H[✅ Add to Morning Brief shortlist]
+  G --> I{Buyer override?}
+  I -->|Yes| H
+  I -->|No| J([Discard listing])
+  H --> K[Draft WhatsApp brief]
+  K --> L{HITL approval?}
+  L -->|Approve| M([Send to buyer / agent])
+  L -->|Reject| J
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VIZ PANEL: MLOps / PlantUML sequence ─── -->
+  <div class="viz-panel" id="vpanel-mlops">
+    <div class="viz-header">
+      <div class="vh-left">
+        <div class="vh-audience">MLOps / AI Ops · Observability + runbooks</div>
+        <div class="vh-title">Sequence diagram — Full HITL negotiation turn</div>
+        <div class="vh-desc">Turn-by-turn message flow for one complete negotiation cycle — from morning scrape to agent reply. Rendered in Mermaid sequence syntax (PlantUML equivalent). The right format for a LangSmith runbook or Confluence operations page.</div>
+        <div class="vh-badges">
+          <span class="vh-tool b-coral badge">Mermaid sequence</span>
+          <span class="vh-tool b-blue badge">LangSmith · Langfuse</span>
+          <span class="vh-tool b-green badge">Confluence · Notion</span>
+        </div>
+      </div>
+    </div>
+    <div class="viz-body">
+      <div class="mermaid">
+sequenceDiagram
+  autonumber
+  participant PG as PropertyGuru / 99.co
+  participant Scout as Browser-use.ai
+  participant Vision as Gemini Vision Node
+  participant Risk as URA Risk Node
+  participant GPT as GPT-5 Negotiation Node
+  participant DB as Supabase
+  participant WA as WhatsApp (Twilio)
+  participant Buyer as Buyer (HITL)
+  participant Agent as Seller Agent
+
+  Scout->>PG: Daily scrape — 1,000+ listings
+  PG-->>Scout: Raw listing feed
+  Scout->>DB: Write to listings_master
+  Scout->>Vision: Send floor plan + video URL (top 2%)
+  Vision-->>Scout: "12% phantom GFA — AC ledge. Recommend -5% bid"
+  Scout->>Risk: Check URA Master Plan for GLS sites
+  Risk-->>Scout: "No GLS within 500m — clear"
+  Scout->>GPT: Generate negotiation opening
+  GPT-->>Scout: Draft — "Unit at $2.85M. URA comp: $2.71M Mar 2026. Open to discuss?"
+  Scout->>WA: Send Morning Brief + draft to Buyer
+  WA->>Buyer: Morning Brief notification
+
+  Buyer-->>WA: Tap APPROVE ✅
+  WA->>Agent: Message delivered
+
+  Agent-->>WA: Reply — "Can do $2.80M"
+  WA->>DB: Log reply in negotiation_logs
+  WA->>GPT: Generate counter-offer (SORA stress-tested)
+  GPT-->>WA: Counter — "$2.76M — based on URA data"
+  WA->>Buyer: Counter draft for HITL review
+
+  Note over Scout,DB: If no reply within 7 days → Sleep state logged → auto follow-up scheduled
+  Note over WA,Buyer: Every send requires explicit Buyer APPROVE tap — never auto-sent
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VIZ PANEL: Security / C4 Deployment + trust boundaries ─── -->
+  <div class="viz-panel" id="vpanel-sec">
+    <div class="viz-header">
+      <div class="vh-left">
+        <div class="vh-audience">Security / Compliance · Governance audit</div>
+        <div class="vh-title">arc42 §10–12 + C4 Deployment with trust boundaries</div>
+        <div class="vh-desc">C4 Deployment diagram showing infrastructure zones, trust boundaries, and data residency. Paired with arc42 §10 (quality requirements), §11 (risks), and ADRs for every tool access decision. The format for a security review or PDPA compliance audit.</div>
+        <div class="vh-badges">
+          <span class="vh-tool b-red badge">C4 Deployment</span>
+          <span class="vh-tool b-blue badge">arc42 §10–12</span>
+          <span class="vh-tool b-purple badge">Structurizr / PlantUML</span>
+        </div>
+      </div>
+    </div>
+    <div class="viz-body">
+      <div class="mermaid">
+flowchart TB
+  subgraph internet["🌐 Public Internet (untrusted)"]
+    PG_EXT["PropertyGuru / 99.co\n(Public listing portal)"]
+    WA_EXT["WhatsApp Business\n(Twilio endpoint)"]
+    URA_EXT["URA Open Data API\n(Singapore Govt)"]
+  end
+
+  subgraph sg_cloud["🛡️ Singapore Cloud Zone (Railway.app / Replit)"]
+    direction TB
+    subgraph agent_runtime["Agent Runtime — No PII stored here"]
+      ORCH2["LangGraph Orchestrator"]
+      SCOUT2["Browser-use.ai Scout"]
+      VISION2["Gemini Vision Node"]
+      RISK2["URA Risk Node"]
+      NEG2["GPT-5 Negotiation Node"]
+    end
+    subgraph gateway["API Gateway — Rate-limited + logged"]
+      GW["Egress controller\nOutbound calls only\nNo inbound ports open"]
+    end
+  end
+
+  subgraph data_zone["🔒 Data Zone (Supabase — Singapore region)"]
+    DB2["listings_master\nNo PII — property data only"]
+    LOGS2["negotiation_logs\nAgent + buyer messages\nEncrypted at rest · AES-256"]
+    VEC2["pgvector embeddings\nSentiment — anonymised"]
+  end
+
+  subgraph buyer_device["📱 Buyer Device (trusted)"]
+    BUYER2["WhatsApp app\nHITL approval gate\nBuyer identity — local only"]
+  end
+
+  ORCH2 --> GW
+  GW -->|"HTTPS only"| PG_EXT & WA_EXT & URA_EXT
+  ORCH2 <-->|"Encrypted DB conn"| DB2 & LOGS2 & VEC2
+  WA_EXT <-->|"End-to-end encrypted"| BUYER2
+
+  style internet fill:#FCEAEA,stroke:#C0392B,stroke-width:1px
+  style sg_cloud fill:#E8F0EB,stroke:#2D6A4F,stroke-width:1.5px
+  style data_zone fill:#E8EFF7,stroke:#1A3A5C,stroke-width:1.5px
+  style buyer_device fill:#FCEAE4,stroke:#7A2E1A,stroke-width:1px
+  style gateway fill:#FDF0DC,stroke:#B8950A,stroke-width:1px
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VIZ PANEL: Product / BPMN Mermaid flowchart ─── -->
+  <div class="viz-panel" id="vpanel-product">
+    <div class="viz-header">
+      <div class="vh-left">
+        <div class="vh-audience">Product / Business · Workflow understanding</div>
+        <div class="vh-title">How it works — BPMN-style workflow (no tech jargon)</div>
+        <div class="vh-desc">Mermaid BPMN-style flowchart embedded in a Confluence or Notion page. No infrastructure terminology. Shows the buyer's journey and where the AI takes over, in plain business language. The right format for a product manager, agency partner, or client briefing.</div>
+        <div class="vh-badges">
+          <span class="vh-tool b-green badge">Mermaid flowchart</span>
+          <span class="vh-tool b-blue badge">Confluence · Notion</span>
+          <span class="vh-tool b-teal badge">BPMN-style · No jargon</span>
+        </div>
+      </div>
+    </div>
+    <div class="viz-body">
+      <div class="mermaid">
+flowchart LR
+  subgraph morning["🌅 Every Morning — Automated"]
+    A1([AI scans 1,000+\nproperty listings]) --> A2{Meets your\ncriteria?}
+    A2 -->|No| A3([Skip])
+    A2 -->|Yes| A4[Check tax impact\nABSD cliff analysis]
+    A4 --> A5[Inspect floor plan\nand video]
+    A5 --> A6[Check future\nconstruction risk]
+    A6 --> A7[Prepare your\nMorning Brief]
+  end
+
+  subgraph you["☕ You — 5 minutes"]
+    B1([Receive WhatsApp\nMorning Brief]) --> B2{Interested\nin a unit?}
+    B2 -->|No| B3([AI continues\nwatching])
+    B2 -->|Yes| B4[AI drafts opening\nmessage to agent]
+    B4 --> B5{Approve\nto send?}
+    B5 -->|Yes| B6([Message sent])
+    B5 -->|No| B7([Edit and re-draft])
+  end
+
+  subgraph negotiate["🤝 Over Weeks / Months — AI manages"]
+    C1([Agent replies]) --> C2{Agent\nengaged?}
+    C2 -->|No reply 7 days| C3[AI follows up\nautomatically]
+    C3 --> C2
+    C2 -->|Yes| C4[AI proposes\ncounter-offer\ndata-backed]
+    C4 --> C5{You approve\ncounter?}
+    C5 -->|Yes| C6([Sent to agent])
+    C5 -->|No| C7([Adjust and retry])
+    C6 --> C8{Deal\nagreed?}
+    C8 -->|Yes| C9([🎉 Proceed to OTP])
+    C8 -->|Not yet| C2
+  end
+
+  A7 --> B1
+  B6 --> C1
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 05 — PRINCIPLES -->
+  <p class="sec-label">05 — Guiding principles</p>
+  <h2 class="sec-title">Four rules the community has learned the hard way</h2>
+  <p class="sec-sub">Applied to the Omni-Negotiator's 3–6 month agentic lifecycle.</p>
+  <div class="principle-grid">
+    <div class="principle-card"><div class="p-num">01</div><div class="p-head">One diagram per audience</div><div class="p-body">The board sees the draw.io context overview. The developer sees the LangGraph state machine export. The AI agent reads the CLAUDE.md flowchart. Never the same file.</div></div>
+    <div class="principle-card"><div class="p-num">02</div><div class="p-head">Diagram source in git</div><div class="p-body">All Mermaid, PlantUML, and Structurizr DSL lives alongside code in pull requests. Visio goes stale within a sprint on a weekly-cadence agentic build.</div></div>
+    <div class="principle-card"><div class="p-num">03</div><div class="p-head">Document the why, not the what</div><div class="p-body">ADRs capture why LangGraph beat CrewAI and why Supabase beat Pinecone — not what was built. The code does that.</div></div>
+    <div class="principle-card"><div class="p-num">04</div><div class="p-head">Agents read docs too</div><div class="p-body">CLAUDE.md with embedded Mermaid flowcharts acts as an execution contract — the agent reads the decision tree before taking any action.</div></div>
+  </div>
+
+  <div class="divider"></div>
+  <p class="sec-label">06 — Anti-pattern to avoid</p>
+  <div class="antipattern"><strong>If the diagram can't be updated in a pull request, it will go stale.</strong> The Omni-Negotiator runs a 3–6 month lifecycle with weekly cadence changes — a diagram outside the codebase becomes archaeology within a month. The second anti-pattern: the "everything connected to everything" spaghetti graph. Pick one diagram per audience, keep it sparse, and let the prose do the rest.</div>
+
+  <div class="divider"></div>
+  <p class="sec-label">07 — Next steps for the team</p>
+  <h2 class="sec-title">Approved PoC scope</h2>
+  <div class="cta-row">
+    <div class="cta-item"><div class="cta-check">☐</div><div class="cta-title">Approve PoC Phase: District 15/19 Landed Scouter</div><div class="cta-body">Scope the first working agent to a single district — Scouting + Vision nodes only. Validate GFA phantom space detection on 10 real resale listings.</div></div>
+    <div class="cta-item"><div class="cta-check">☐</div><div class="cta-title">Initialize Vision-Legal Node</div><div class="cta-body">Connect Gemini 1.5 Pro to the floor plan pipeline. First test: scan 10 pre-2023 resale listings and validate True Livable Area vs. strata area discrepancy.</div></div>
+  </div>
+
+  <footer>
+    <span>Omni-Negotiator v2.0 · Singapore Property · April 2026</span>
+    <span>Format reference: <a href="https://pardhuv-ai-commercial.github.io/linkedin-page/format-selection.html" target="_blank">Pardhu V — Format Selection Guide ↗</a></span>
+  </footer>
+
+</div><!-- end wrap -->
+
+<script>
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'neutral',
+    fontFamily: "'DM Mono', monospace",
+    fontSize: 13,
+    flowchart: { curve: 'basis', padding: 20 },
+    sequence: { actorMargin: 60 }
+  });
+
+  // Stack layer toggle
+  const stackIds = ['brain','cognition','hands','vision','memory','risk','voice'];
+  function toggleStack(id) {
+    const panel = document.getElementById('panel-' + id);
+    const card  = document.getElementById('card-' + id);
+    const open  = panel.classList.contains('visible');
+    stackIds.forEach(p => {
+      document.getElementById('panel-' + p).classList.remove('visible');
+      document.getElementById('card-'  + p).classList.remove('active');
+    });
+    if (!open) {
+      panel.classList.add('visible');
+      card.classList.add('active');
+      setTimeout(() => panel.scrollIntoView({ behavior:'smooth', block:'nearest' }), 50);
+    }
+  }
+
+  // Audience matrix toggle
+  const audIds = ['csuite','cto','engr','dev','agent','mlops','sec','product'];
+  function toggleAud(id) {
+    const panel = document.getElementById('vpanel-' + id);
+    const card  = document.getElementById('acard-' + id);
+    const open  = panel.classList.contains('visible');
+
+    // close all
+    audIds.forEach(a => {
+      document.getElementById('vpanel-' + a).classList.remove('visible');
+      document.getElementById('acard-'  + a).classList.remove('active');
+    });
+
+    if (!open) {
+      panel.classList.add('visible');
+      card.classList.add('active');
+      // render mermaid diagrams inside the newly visible panel
+      setTimeout(() => {
+        const nodes = panel.querySelectorAll('.mermaid:not([data-processed])');
+        if (nodes.length) {
+          mermaid.run({ nodes });
+        }
+        panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+      }, 80);
+    }
+  }
+
+  // Initial render for any visible mermaid nodes on load (none by default — all panels hidden)
+  // Render the first audience panel proactively so it feels fast on first click
+  document.addEventListener('DOMContentLoaded', () => {
+    // nothing pre-rendered; lazy render on click
+  });
+</script>
+</body>
+</html>

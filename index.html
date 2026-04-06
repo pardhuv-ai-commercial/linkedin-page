@@ -136,6 +136,21 @@ nav{position:sticky;top:0;z-index:200;background:rgba(13,13,13,.95);backdrop-fil
 .pr-arr{padding:24px 24px;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--text3);transition:color .2s,transform .2s}
 .pub-row:hover .pr-arr{color:var(--green);transform:translateX(3px)}
 
+/* SECOND FEATURED — Omni-Negotiator */
+.pub-featured2{
+  display:grid;grid-template-columns:1fr 280px;gap:0;
+  border:1px solid var(--rule);border-top:none;margin-bottom:1px;
+  text-decoration:none;color:inherit;
+  transition:border-color .2s;position:relative;overflow:hidden;
+}
+.pub-featured2:hover{border-color:var(--green-border)}
+.pub-featured2::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px;background:var(--green);transform:scaleY(0);transition:transform .25s;transform-origin:top}
+.pub-featured2:hover::before{transform:scaleY(1)}
+.pf2-main{padding:28px 36px;background:var(--bg3)}
+.pf2-side{background:var(--bg4);padding:28px 28px;border-left:1px solid var(--rule);display:flex;flex-direction:column;justify-content:space-between}
+@media(max-width:700px){.pub-featured2{grid-template-columns:1fr}.pf2-side{border-left:none;border-top:1px solid var(--rule)}}
+.pf2-new{display:inline-block;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--bg);background:var(--green);padding:2px 8px;margin-bottom:10px}
+
 /* UPCOMING */
 .pub-upcoming{border:1px solid var(--rule);border-top:none;background:var(--bg);padding:18px 28px 18px 76px;display:flex;align-items:center;gap:16px;justify-content:space-between;flex-wrap:wrap}
 .upcoming-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-right:8px}
@@ -273,9 +288,36 @@ footer a{color:var(--green);text-decoration:none}
       </div>
     </a>
 
+    <!-- OMNI-NEGOTIATOR — SECOND FEATURED -->
+    <a href="omni-negotiator-techstack-v3.html" class="pub-featured2 fu d1">
+      <div class="pf2-main">
+        <span class="pf2-new">New · April 2026</span>
+        <div class="pub-series">Applied AI · Singapore Property · April 2026</div>
+        <h3 class="pub-title-large">The Omni-Negotiator — Agentic AI Techstack for Singapore Property</h3>
+        <p class="pub-desc">A stateful, multi-agent system that scouts 1,000+ listings/day, detects GFA phantom space in pre-2023 resale units, flags the February 2026 ABSD cliff, assesses URA Master Plan risk, and manages 3–6 month WhatsApp negotiations — with Human-in-the-Loop approval at every send. Includes audience-specific stack diagrams: C-suite draw.io overview, C4 Container for architects, LangGraph state machine for developers, HITL sequence for MLOps, CLAUDE.md execution contract for the agent itself, and a jargon-free BPMN flowchart for product.</p>
+        <div class="pub-meta-row">
+          <span class="pub-tag g">Applied AI · Multi-Agent</span>
+          <span class="pub-tag">Singapore Property</span>
+          <span class="pub-tag">LangGraph · GPT-5</span>
+          <span class="pub-tag">Supabase · Twilio</span>
+          <span class="pub-date">April 2026</span>
+        </div>
+      </div>
+      <div class="pf2-side">
+        <div>
+          <div class="pf-side-label">At a glance</div>
+          <div class="pf-side-stat"><div class="pfs-n">7</div><div class="pfs-l">AT Stack layers · Brain to Voice</div></div>
+          <div class="pf-side-stat"><div class="pfs-n">8</div><div class="pfs-l">Audience-specific diagrams rendered</div></div>
+          <div class="pf-side-stat"><div class="pfs-n">3–6</div><div class="pfs-l">Month negotiation lifecycle</div></div>
+          <div class="pf-side-stat"><div class="pfs-n">+93%</div><div class="pfs-l">HDB MOP supply surge · 2026</div></div>
+        </div>
+        <div class="read-link">Open techstack guide →</div>
+      </div>
+    </a>
+
     <!-- STANDARD ROWS -->
     <a href="agent-native-data-layer.html" class="pub-row fu d1">
-      <div class="pr-num"><div class="prn">02</div></div>
+      <div class="pr-num"><div class="prn">03</div></div>
       <div class="pr-body">
         <div class="prs">Enterprise Intelligence · 2025</div>
         <div class="prt">Architecting the Agent-Native Data Layer</div>
@@ -285,7 +327,7 @@ footer a{color:var(--green);text-decoration:none}
     </a>
 
     <a href="context-window.html" class="pub-row fu d2">
-      <div class="pr-num"><div class="prn">03</div></div>
+      <div class="pr-num"><div class="prn">04</div></div>
       <div class="pr-body">
         <div class="prs">LLM Architecture · 2025</div>
         <div class="prt">Context-Window as a Scarce Resource — Enterprise LLM Architecture</div>
@@ -295,7 +337,7 @@ footer a{color:var(--green);text-decoration:none}
     </a>
 
     <a href="format-selection.html" class="pub-row fu d3">
-      <div class="pr-num"><div class="prn">04</div></div>
+      <div class="pr-num"><div class="prn">05</div></div>
       <div class="pr-body">
         <div class="prs">Documentation Standards · 2026</div>
         <div class="prt">Format Selection for Agentic AI Documentation — Community Standard Reference</div>
@@ -305,7 +347,7 @@ footer a{color:var(--green);text-decoration:none}
     </a>
 
     <a href="mas-governance-guide.html" class="pub-row fu">
-      <div class="pr-num"><div class="prn">05</div></div>
+      <div class="pr-num"><div class="prn">06</div></div>
       <div class="pr-body">
         <div class="prs">Governance · April 2026</div>
         <div class="prt">Agentic AI Governance for APAC Financial Institutions — An MGF Practitioner Guide</div>
@@ -315,7 +357,7 @@ footer a{color:var(--green);text-decoration:none}
     </a>
 
     <a href="multi-party-case-study.html" class="pub-row fu d1">
-      <div class="pr-num"><div class="prn">06</div></div>
+      <div class="pr-num"><div class="prn">07</div></div>
       <div class="pr-body">
         <div class="prs">Case Study · April 2026</div>
         <div class="prt">The Multi-Party Support Deadlock — Field Case Study</div>
