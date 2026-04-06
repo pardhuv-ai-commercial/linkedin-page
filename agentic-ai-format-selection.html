@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic AI — Format Selection Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f0e;
+    --surface: #161716;
+    --surface2: #1d1e1c;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #e8e6df;
+    --text2: #9b9990;
+    --text3: #6a6863;
+    --accent: #b8f067;
+    --accent2: #7de8c4;
+    --accent3: #f0a94a;
+    --accent4: #e87f7f;
+    --accent5: #9b8af0;
+    --tag-bg: rgba(184,240,103,0.1);
+    --tag-border: rgba(184,240,103,0.25);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Instrument Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 72px 64px 56px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -120px; left: -80px;
+    width: 600px; height: 400px;
+    background: radial-gradient(ellipse, rgba(184,240,103,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 24px; height: 1px;
+    background: var(--accent);
+  }
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(36px, 5vw, 58px);
+    font-weight: 400;
+    line-height: 1.1;
+    color: var(--text);
+    max-width: 700px;
+    margin-bottom: 20px;
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .header-sub {
+    color: var(--text2);
+    font-size: 16px;
+    max-width: 560px;
+    line-height: 1.7;
+  }
+  .header-meta {
+    margin-top: 32px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .meta-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    border: 1px solid var(--border);
+    padding: 5px 14px;
+    border-radius: 100px;
+  }
+
+  /* ── LAYOUT ── */
+  main { padding: 0 64px 80px; }
+
+  section {
+    padding-top: 64px;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  h3 {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+    letter-spacing: 0.01em;
+  }
+
+  /* ── FORMAT CARDS ── */
+  .format-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 28px;
+  }
+
+  .format-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .format-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 12px 12px 0 0;
+  }
+  .format-card.c-green::before { background: var(--accent); }
+  .format-card.c-teal::before { background: var(--accent2); }
+  .format-card.c-amber::before { background: var(--accent3); }
+  .format-card.c-red::before { background: var(--accent4); }
+  .format-card.c-purple::before { background: var(--accent5); }
+  .format-card.c-muted::before { background: var(--text3); }
+
+  .format-card:hover {
+    border-color: var(--border2);
+    background: var(--surface2);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    gap: 8px;
+  }
+
+  .badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    padding: 3px 10px;
+    border-radius: 100px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .badge.green { background: rgba(184,240,103,0.12); color: var(--accent); border: 1px solid rgba(184,240,103,0.2); }
+  .badge.teal  { background: rgba(125,232,196,0.12); color: var(--accent2); border: 1px solid rgba(125,232,196,0.2); }
+  .badge.amber { background: rgba(240,169,74,0.12); color: var(--accent3); border: 1px solid rgba(240,169,74,0.2); }
+  .badge.muted { background: rgba(255,255,255,0.05); color: var(--text3); border: 1px solid var(--border); }
+  .badge.purple { background: rgba(155,138,240,0.12); color: var(--accent5); border: 1px solid rgba(155,138,240,0.2); }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.55;
+    margin-bottom: 14px;
+  }
+
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  .links-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 8px;
+  }
+
+  .link-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .link-list a {
+    font-size: 12px;
+    color: var(--text2);
+    text-decoration: none;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    line-height: 1.4;
+    transition: color 0.15s;
+  }
+  .link-list a::before {
+    content: '→';
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+  .link-list a:hover { color: var(--text); }
+  .link-list a:hover::before { color: var(--accent); }
+
+  /* ── MATRIX ── */
+  .matrix-wrap {
+    margin-top: 28px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+  }
+  thead tr {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border2);
+  }
+  th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 14px 20px;
+    text-align: left;
+    font-weight: 500;
+  }
+  td {
+    padding: 13px 20px;
+    font-size: 13px;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--surface2); }
+
+  .td-audience {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 13px;
+  }
+  .dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-right: 8px;
+    flex-shrink: 0;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+  }
+
+  /* ── PRINCIPLE CARDS ── */
+  .principle-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 28px;
+  }
+  .principle-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 26px;
+  }
+  .principle-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 42px;
+    color: var(--border2);
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+  .principle-card p {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-top: 8px;
+  }
+
+  /* ── CALLOUT ── */
+  .callout {
+    background: rgba(184,240,103,0.05);
+    border: 1px solid rgba(184,240,103,0.18);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 20px 24px;
+    margin-top: 32px;
+  }
+  .callout-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .callout p {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .callout strong { color: var(--text); font-weight: 600; }
+
+  /* ── STACK RECOMMENDATION ── */
+  .stack-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-top: 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .stack-col-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 16px;
+  }
+  .stack-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .stack-icon {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .stack-item-text strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .stack-item-text span {
+    font-size: 12px;
+    color: var(--text3);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    margin-top: 64px;
+    padding: 32px 64px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  footer p {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    header, main, footer { padding-left: 24px; padding-right: 24px; }
+    .format-grid { grid-template-columns: 1fr 1fr; }
+    .principle-grid { grid-template-columns: 1fr; }
+    .stack-box { grid-template-columns: 1fr; gap: 20px; }
+  }
+  @media (max-width: 600px) {
+    .format-grid { grid-template-columns: 1fr; }
+    header { padding: 40px 24px 36px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Agentic AI · Architecture Documentation</div>
+  <h1>Format selection <em>guide</em></h1>
+  <p class="header-sub">A practical reference for choosing the right diagram format, markdown standard, and community resource — mapped to audience, purpose, and tooling maturity.</p>
+  <div class="header-meta">
+    <span class="meta-pill">April 2026</span>
+    <span class="meta-pill">For internal team use</span>
+    <span class="meta-pill">Sources: GitHub · Medium · Substack · Google Cloud · Bain</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 1 — DIAGRAM FORMATS
+  ══════════════════════════════════════════════ -->
+  <section>
+    <div class="section-label">01 — Diagram formats</div>
+    <h2>What the community is actually using</h2>
+    <p style="color:var(--text2); font-size:14px; max-width:640px; margin-top:8px;">Six formats dominate practitioner GitHub repos, engineering blogs, and Substack newsletters. Each occupies a distinct layer of the stack and serves a different audience.</p>
+
+    <div class="format-grid">
+
+      <!-- MERMAID -->
+      <div class="format-card c-green">
+        <div class="card-header">
+          <h3>Mermaid</h3>
+          <span class="badge green">Most used</span>
+        </div>
+        <p class="card-desc">Text-as-code diagrams that render natively inside GitHub, GitLab, Notion and Confluence. Flowcharts, sequence, C4, ERD — all from markdown. The community standard because it travels in pull requests.</p>
+        <div class="tag-row">
+          <span class="tag">Flowchart</span>
+          <span class="tag">Sequence</span>
+          <span class="tag">C4</span>
+          <span class="tag">ERD</span>
+          <span class="tag">State</span>
+        </div>
+        <div class="links-label">Real examples · community resources</div>
+        <ul class="link-list">
+          <li><a href="https://www.awesome-testing.com/2025/09/mermaid-diagrams" target="_blank">AI Agent flowcharts + MCP sequence diagrams (Awesome Testing, Sep 2025)</a></li>
+          <li><a href="https://github.com/joserprieto/ai-diagrams-toolkit" target="_blank">ai-diagrams-toolkit — Mermaid templates with semantic colors for AI systems</a></li>
+          <li><a href="https://github.com/fladdict/llmermaid" target="_blank">LLMermaid — Mermaid diagrams as agent execution contracts</a></li>
+          <li><a href="https://erdembircan.github.io/blog/mermaid-flowcharts-agentic-development" target="_blank">Mermaid flowcharts as contracts for agentic development</a></li>
+          <li><a href="https://github.com/devhims/mermaid-agent" target="_blank">mermaid-agent — AI-powered Mermaid editor with error fixing</a></li>
+          <li><a href="https://mermaid.js.org/syntax/flowchart.html" target="_blank">Official Mermaid flowchart syntax reference</a></li>
+          <li><a href="https://mermaid.live" target="_blank">mermaid.live — free online editor for collaboration</a></li>
+        </ul>
+      </div>
+
+      <!-- C4 MODEL -->
+      <div class="format-card c-teal">
+        <div class="card-header">
+          <h3>C4 model</h3>
+          <span class="badge teal">De facto standard</span>
+        </div>
+        <p class="card-desc">Four zoom levels — Context → Container → Component → Code — mapped to four different audiences. The architectural storytelling framework that scales from board slides to code review. Draw it in Mermaid or Structurizr DSL.</p>
+        <div class="tag-row">
+          <span class="tag">Context</span>
+          <span class="tag">Container</span>
+          <span class="tag">Component</span>
+          <span class="tag">Deployment</span>
+        </div>
+        <div class="links-label">Real examples · community resources</div>
+        <ul class="link-list">
+          <li><a href="https://github.com/jonverrier/C4Diagrammer" target="_blank">C4-Agent — MCP server that auto-generates C4 + Mermaid docs from code</a></li>
+          <li><a href="https://github.com/softaworks/agent-toolkit/blob/main/skills/c4-architecture/README.md" target="_blank">C4 architecture skill for AI agents — context, container, deployment templates</a></li>
+          <li><a href="https://dev.to/surgbc/using-github-and-mermaidjs-to-document-software-architecture-using-c4-model-57fn" target="_blank">Using GitHub + MermaidJS for C4 documentation (DEV Community)</a></li>
+          <li><a href="https://c4model.com" target="_blank">c4model.com — official guide by Simon Brown</a></li>
+          <li><a href="https://github.com/alirezadir/Agentic-AI-Systems" target="_blank">Agentic-AI-Systems — C4-style architecture layers for multi-agent systems</a></li>
+          <li><a href="https://docs.cloud.google.com/architecture/agentic-ai-overview" target="_blank">Google Cloud Agentic AI Architecture Center — reference diagrams</a></li>
+        </ul>
+      </div>
+
+      <!-- STRUCTURIZR DSL -->
+      <div class="format-card c-teal">
+        <div class="card-header">
+          <h3>Structurizr DSL</h3>
+          <span class="badge teal">Architecture-as-code</span>
+        </div>
+        <p class="card-desc">Define the architecture model once in a DSL; export to PNG, PlantUML, Mermaid, or deploy as a live interactive site. The power move for long-lived, multi-view architecture documentation. Pairs with arc42.</p>
+        <div class="tag-row">
+          <span class="tag">arc42</span>
+          <span class="tag">GitHub Pages</span>
+          <span class="tag">CI/CD docs</span>
+          <span class="tag">Multi-view</span>
+        </div>
+        <div class="links-label">Real examples · community resources</div>
+        <ul class="link-list">
+          <li><a href="https://github.com/bitsmuggler/arc42-c4-software-architecture-documentation-example" target="_blank">arc42 + C4 + Structurizr documentation-as-code example (GitHub)</a></li>
+          <li><a href="https://github.com/milanm/architecture-docs" target="_blank">architecture-docs — arc42 + C4 + AsciiDoc + GitHub Pages pipeline</a></li>
+          <li><a href="https://bitsmuggler.github.io/arc42-c4-software-architecture-documentation-example/" target="_blank">Live deployed example: internet banking system documentation</a></li>
+          <li><a href="https://structurizr.com/dsl" target="_blank">Structurizr DSL reference</a></li>
+          <li><a href="https://github.com/topics/arc42" target="_blank">arc42 GitHub topic — community templates and examples</a></li>
+        </ul>
+      </div>
+
+      <!-- PLANTUML -->
+      <div class="format-card c-amber">
+        <div class="card-header">
+          <h3>PlantUML</h3>
+          <span class="badge amber">Enterprise teams</span>
+        </div>
+        <p class="card-desc">Text-based UML with powerful sequence, component and deployment diagrams. Dominant in Java/.NET shops and deeply embedded in Confluence + Jira. The go-to for showing agent turn-by-turn conversation flows.</p>
+        <div class="tag-row">
+          <span class="tag">Sequence</span>
+          <span class="tag">Component</span>
+          <span class="tag">Deployment</span>
+          <span class="tag">Confluence</span>
+        </div>
+        <div class="links-label">Real examples · community resources</div>
+        <ul class="link-list">
+          <li><a href="https://plantuml.com/sequence-diagram" target="_blank">PlantUML sequence diagram reference — ideal for agent turn flows</a></li>
+          <li><a href="https://crashedmind.github.io/PlantUMLHitchhikersGuide/" target="_blank">PlantUML Hitchhiker's Guide — community deep-dive</a></li>
+          <li><a href="https://denherrring.github.io/arc42-vitepress/arc42/english/mermaid_example.html" target="_blank">Mermaid C4 diagram examples in arc42 vitepress (reference)</a></li>
+        </ul>
+      </div>
+
+      <!-- LANGGRAPH VISUALISER -->
+      <div class="format-card c-purple">
+        <div class="card-header">
+          <h3>LangGraph visualiser</h3>
+          <span class="badge purple">AI-native</span>
+        </div>
+        <p class="card-desc">Auto-generated state machine diagram of your actual agent graph — nodes, edges, conditional branches. Exported from code, not drawn by hand. A debugging artefact that doubles as living documentation.</p>
+        <div class="tag-row">
+          <span class="tag">Auto-generated</span>
+          <span class="tag">State machine</span>
+          <span class="tag">LangSmith</span>
+          <span class="tag">Python</span>
+        </div>
+        <div class="links-label">Real examples · community resources</div>
+        <ul class="link-list">
+          <li><a href="https://github.com/alirezadir/Agentic-AI-Systems" target="_blank">Agentic-AI-Systems — code examples + LangGraph architecture diagrams</a></li>
+          <li><a href="https://neurlcreators.substack.com/p/langgraph-agent-state-machine-review" target="_blank">LangGraph state machine review — Substack deep-dive</a></li>
+          <li><a href="https://python.langchain.com/docs/langgraph" target="_blank">LangGraph docs — graph.get_graph().draw_mermaid() export</a></li>
+          <li><a href="https://github.com/mohd-faizy/Agentic_AI_using_LangGraph" target="_blank">Agentic AI using LangGraph — reference implementation with diagrams</a></li>
+          <li><a href="https://gerred.github.io/building-an-agentic-system/system-architecture-diagram.html" target="_blank">Agentic system architecture diagram — C4 + Mermaid walkthrough</a></li>
+        </ul>
+      </div>
+
+      <!-- DRAW.IO / EXCALIDRAW -->
+      <div class="format-card c-muted">
+        <div class="card-header">
+          <h3>draw.io / Excalidraw</h3>
+          <span class="badge muted">Workshop use</span>
+        </div>
+        <p class="card-desc">Free-form visual whiteboards — best for discovery sessions and stakeholder workshops. Not version-controllable. Export to PNG for embedding. The community consensus is: <em>use these to think, not to store.</em></p>
+        <div class="tag-row">
+          <span class="tag">Workshops</span>
+          <span class="tag">Slides</span>
+          <span class="tag">Discovery</span>
+          <span class="tag">PNG export</span>
+        </div>
+        <div class="links-label">Real examples · community resources</div>
+        <ul class="link-list">
+          <li><a href="https://www.myyearindata.com/posts/agentic-diagramming/" target="_blank">Agentic diagramming anti-patterns — MyYearInData (Nov 2025)</a></li>
+          <li><a href="https://excalidraw.com" target="_blank">Excalidraw — free collaborative whiteboard</a></li>
+          <li><a href="https://app.diagrams.net" target="_blank">draw.io — free diagram tool with VS Code extension</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 2 — MARKDOWN FILE FORMATS
+  ══════════════════════════════════════════════ -->
+  <section>
+    <div class="section-label">02 — Markdown file formats</div>
+    <h2>What gets checked into repos</h2>
+    <p style="color:var(--text2); font-size:14px; max-width:640px; margin-top:8px;">The practitioner community has converged on docs-as-code: every architecture artefact lives in a git repo as a markdown file, updated in pull requests alongside code.</p>
+
+    <div class="format-grid" style="margin-top:28px;">
+
+      <!-- ADR -->
+      <div class="format-card c-green">
+        <div class="card-header">
+          <h3>ADR — Architecture Decision Record</h3>
+          <span class="badge green">Most adopted</span>
+        </div>
+        <p class="card-desc">One file per architectural decision. Lightweight but durable. Captures the <em>why</em> — context, options considered, decision made, consequences. Lives in <code style="font-family:'DM Mono',monospace; font-size:11px; background:var(--surface2); padding:1px 5px; border-radius:3px;">/docs/decisions/</code>.</p>
+        <div class="tag-row">
+          <span class="tag">Status</span>
+          <span class="tag">Context</span>
+          <span class="tag">Decision</span>
+          <span class="tag">Consequences</span>
+          <span class="tag">Immutable</span>
+        </div>
+        <div class="links-label">Real examples · community resources</div>
+        <ul class="link-list">
+          <li><a href="https://adr.github.io" target="_blank">adr.github.io — the canonical ADR resource and community hub</a></li>
+          <li><a href="https://github.com/joelparkerhenderson/architecture-decision-record" target="_blank">joelparkerhenderson/architecture-decision-record — 20+ templates and examples</a></li>
+          <li><a href="https://github.com/adr/madr" target="_blank">adr/madr — Markdown Any Decision Records — minimal and full templates</a></li>
+          <li><a href="https://github.com/me2resh/agent-decision-record" target="_blank">agent-decision-record (AgDR) — ADR extended for AI coding agents</a></li>
+          <li><a href="https://github.com/macromania/adr-agent" target="_blank">adr-agent — AI agent that writes ADRs using Azure OpenAI</a></li>
+          <li><a href="https://adolfi.dev/blog/ai-generated-adr/" target="_blank">AI-generated ADRs — Claude scans codebase and writes ADRs automatically</a></li>
+          <li><a href="https://github.com/Alexey-Popov/awesome-ai-architect/blob/main/solution-architecture/architecture-decision-records.md" target="_blank">awesome-ai-architect — ADR guide with AI agent context</a></li>
+          <li><a href="https://gist.github.com/thedavidyoungblood/bccce859af7a476e44a290a2230e0913" target="_blank">ADR documentation pattern + experimental AI agent ADR template</a></li>
+        </ul>
+      </div>
+
+      <!-- ARC42 -->
+      <div class="format-card c-teal">
+        <div class="card-header">
+          <h3>arc42 template</h3>
+          <span class="badge teal">Full system docs</span>
+        </div>
+        <p class="card-desc">12-section system architecture document covering everything from goals and constraints to deployment, quality requirements, and risks. The heavyweight option — but the gold standard when full documentation is required.</p>
+        <div class="tag-row">
+          <span class="tag">12 sections</span>
+          <span class="tag">Markdown / AsciiDoc</span>
+          <span class="tag">Confluence</span>
+          <span class="tag">GitHub Pages</span>
+        </div>
+        <div class="links-label">Real examples · community resources</div>
+        <ul class="link-list">
+          <li><a href="https://arc42.org/overview" target="_blank">arc42.org — official template and guide</a></li>
+          <li><a href="https://github.com/bitsmuggler/arc42-c4-software-architecture-documentation-example" target="_blank">arc42 + C4 example with Structurizr + GitHub Pages pipeline</a></li>
+          <li><a href="https://github.com/milanm/architecture-docs" target="_blank">architecture-docs — arc42 + AsciiDoc + PlantUML full example</a></li>
+          <li><a href="https://github.com/topics/arc42" target="_blank">arc42 GitHub topic — community templates</a></li>
+        </ul>
+      </div>
+
+      <!-- AGENT SPEC FILE -->
+      <div class="format-card c-amber">
+        <div class="card-header">
+          <h3>Agent spec file (agent.md)</h3>
+          <span class="badge amber">Emerging standard</span>
+        </div>
+        <p class="card-desc">New AI-era convention. One file per deployed agent: model, system prompt, tools, memory config, approval gates, observability hooks, rollback. Checked in alongside code — the agent's "passport".</p>
+        <div class="tag-row">
+          <span class="tag">Per-agent</span>
+          <span class="tag">Model config</span>
+          <span class="tag">Tool bindings</span>
+          <span class="tag">Memory</span>
+          <span class="tag">Governance</span>
+        </div>
+        <div class="links-label">Real examples · community resources</div>
+        <ul class="link-list">
+          <li><a href="https://github.com/alirezadir/Agentic-AI-Systems" target="_blank">Agentic-AI-Systems — agent spec patterns and architecture docs</a></li>
+          <li><a href="https://github.com/softaworks/agent-toolkit" target="_blank">agent-toolkit — packaged agent skills with spec file conventions</a></li>
+          <li><a href="https://architect.salesforce.com/docs/architect/fundamentals/guide/agentic-enterprise-it-architecture" target="_blank">Salesforce Agentic Enterprise architecture — reference agent config patterns</a></li>
+          <li><a href="https://medium.com/agenticai-the-autonomous-intelligence/agentic-ai-architecture-a-practical-production-ready-guide-2b2aa6d16118" target="_blank">Production-ready agentic AI guide — Medium (components, guardrails, spec)</a></li>
+        </ul>
+      </div>
+
+      <!-- CLAUDE.MD / AGENTS.MD -->
+      <div class="format-card c-purple">
+        <div class="card-header">
+          <h3>CLAUDE.md / AGENTS.md</h3>
+          <span class="badge purple">AI-native</span>
+        </div>
+        <p class="card-desc">Repo-root instruction files consumed by AI agents at runtime. Machine-readable + human-readable. Pioneered by Claude Code and OpenAI Codex. Tells the agent how to behave in this specific codebase — conventions, constraints, context.</p>
+        <div class="tag-row">
+          <span class="tag">Claude Code</span>
+          <span class="tag">Codex</span>
+          <span class="tag">Cursor</span>
+          <span class="tag">Runtime context</span>
+        </div>
+        <div class="links-label">Real examples · community resources</div>
+        <ul class="link-list">
+          <li><a href="https://docs.anthropic.com/en/docs/claude-code/overview" target="_blank">Claude Code docs — CLAUDE.md conventions and format</a></li>
+          <li><a href="https://erdembircan.github.io/blog/mermaid-flowcharts-agentic-development" target="_blank">Mermaid in CLAUDE.md — flowcharts as agent contracts</a></li>
+          <li><a href="https://adolfi.dev/blog/ai-generated-adr/" target="_blank">agents.md + ADR integration — trigger ADR generation on architecture changes</a></li>
+          <li><a href="https://github.com/me2resh/agent-decision-record" target="_blank">AgDR — CLAUDE.md plugin for automatic decision records</a></li>
+        </ul>
+      </div>
+
+      <!-- RUNBOOK MD -->
+      <div class="format-card c-muted">
+        <div class="card-header">
+          <h3>Runbook + observability docs</h3>
+          <span class="badge muted">Operations</span>
+        </div>
+        <p class="card-desc">Per-agent operational runbooks: how to monitor, alert, debug, and roll back. Linked to LangSmith / Langfuse dashboard configs. The MLOps layer of agent documentation.</p>
+        <div class="tag-row">
+          <span class="tag">LangSmith</span>
+          <span class="tag">Langfuse</span>
+          <span class="tag">Alerts</span>
+          <span class="tag">Rollback</span>
+        </div>
+        <div class="links-label">Real examples · community resources</div>
+        <ul class="link-list">
+          <li><a href="https://thedatasource.substack.com/p/the-state-of-agentic-systems-june" target="_blank">State of agentic systems — observability patterns (The Data Source, Substack)</a></li>
+          <li><a href="https://www.getmaxim.ai/articles/top-5-ai-agent-frameworks-in-2025-a-practical-guide-for-ai-builders/" target="_blank">AI agent framework guide — observability-driven development approach</a></li>
+          <li><a href="https://smith.langchain.com/docs" target="_blank">LangSmith docs — tracing and evaluation for production agents</a></li>
+          <li><a href="https://langfuse.com/docs" target="_blank">Langfuse docs — open-source agent observability</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 3 — SELECTION MATRIX
+  ══════════════════════════════════════════════ -->
+  <section>
+    <div class="section-label">03 — Selection matrix</div>
+    <h2>Pick by audience and purpose</h2>
+    <p style="color:var(--text2); font-size:14px; max-width:640px; margin-top:8px;">The community's rule of thumb: one format per audience. Never compress everything into one diagram. The matrix below maps the seven most common stakeholder types.</p>
+
+    <div class="matrix-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Audience</th>
+            <th>Purpose</th>
+            <th>Recommended format</th>
+            <th>Diagram type</th>
+            <th>Tooling</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-audience"><span class="dot" style="background:#f0a94a;"></span>C-suite / board</td>
+            <td>Strategic alignment</td>
+            <td>1-page PDF or slide deck</td>
+            <td>Hand-crafted draw.io or Excalidraw — PNG export</td>
+            <td>PowerPoint, Keynote, Google Slides</td>
+          </tr>
+          <tr>
+            <td class="td-audience"><span class="dot" style="background:#7de8c4;"></span>CTO / enterprise architects</td>
+            <td>Architecture review</td>
+            <td>arc42 markdown + C4 diagrams</td>
+            <td>C4 Context + Container (Structurizr or Mermaid)</td>
+            <td>Structurizr, MkDocs, GitHub Pages</td>
+          </tr>
+          <tr>
+            <td class="td-audience"><span class="dot" style="background:#b8f067;"></span>Engineering leads</td>
+            <td>Design decisions</td>
+            <td>ADR files in /docs/decisions/</td>
+            <td>Mermaid sequence / flowchart inline</td>
+            <td>VS Code, GitHub, adr-tools, madr</td>
+          </tr>
+          <tr>
+            <td class="td-audience"><span class="dot" style="background:#9b8af0;"></span>Developers (building agents)</td>
+            <td>Implementation guide</td>
+            <td>agent.md spec + README.md per agent</td>
+            <td>LangGraph visualiser + Mermaid component diagram</td>
+            <td>LangGraph, LangSmith, Python</td>
+          </tr>
+          <tr>
+            <td class="td-audience"><span class="dot" style="background:#e87f7f;"></span>AI agents themselves</td>
+            <td>Runtime context</td>
+            <td>CLAUDE.md / AGENTS.md at repo root</td>
+            <td>Mermaid flowcharts as execution contracts</td>
+            <td>Claude Code, Codex, Cursor</td>
+          </tr>
+          <tr>
+            <td class="td-audience"><span class="dot" style="background:#7de8c4;"></span>MLOps / AI Ops</td>
+            <td>Observability + runbooks</td>
+            <td>Runbook markdown + dashboard configs</td>
+            <td>Sequence diagrams (agent turn-by-turn)</td>
+            <td>LangSmith, Langfuse, Prometheus</td>
+          </tr>
+          <tr>
+            <td class="td-audience"><span class="dot" style="background:#f0a94a;"></span>Security / compliance</td>
+            <td>Governance audit</td>
+            <td>arc42 §10–12 + ADRs for tool access</td>
+            <td>C4 deployment + trust boundary diagrams</td>
+            <td>Structurizr, PlantUML</td>
+          </tr>
+          <tr>
+            <td class="td-audience"><span class="dot" style="background:#b8f067;"></span>Product / business</td>
+            <td>Workflow understanding</td>
+            <td>Confluence page with embedded Mermaid</td>
+            <td>Flowchart — BPMN-style, no tech jargon</td>
+            <td>Confluence, Notion, Mermaid live</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 4 — WINNING COMBINATION
+  ══════════════════════════════════════════════ -->
+  <section>
+    <div class="section-label">04 — Recommended stack</div>
+    <h2>The docs-as-code winning combination</h2>
+    <p style="color:var(--text2); font-size:14px; max-width:640px; margin-top:8px;">What leading teams in the community have converged on — a single toolchain that covers all layers of the format selection matrix.</p>
+
+    <div class="stack-box">
+      <div>
+        <div class="stack-col-title">Diagrams (version-controlled)</div>
+
+        <div class="stack-item">
+          <div class="stack-icon" style="background:rgba(184,240,103,0.1);">🧜</div>
+          <div class="stack-item-text">
+            <strong>Mermaid in markdown</strong>
+            <span>Flowcharts, sequences, C4 — lives in git, renders in GitHub</span>
+          </div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-icon" style="background:rgba(125,232,196,0.1);">📐</div>
+          <div class="stack-item-text">
+            <strong>C4 model structure</strong>
+            <span>Context + Container covers 90% of needs</span>
+          </div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-icon" style="background:rgba(155,138,240,0.1);">🕸️</div>
+          <div class="stack-item-text">
+            <strong>LangGraph visualiser export</strong>
+            <span>Auto-generated agent state machine — commit as artefact</span>
+          </div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-icon" style="background:rgba(255,255,255,0.05);">✏️</div>
+          <div class="stack-item-text">
+            <strong>draw.io / Excalidraw</strong>
+            <span>Discovery and workshops only — export PNG, don't store source</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="stack-col-title">Markdown files (in /docs/)</div>
+
+        <div class="stack-item">
+          <div class="stack-icon" style="background:rgba(184,240,103,0.1);">📋</div>
+          <div class="stack-item-text">
+            <strong>ADR files (/docs/decisions/)</strong>
+            <span>One per architectural choice — immutable, versioned, linked</span>
+          </div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-icon" style="background:rgba(240,169,74,0.1);">🤖</div>
+          <div class="stack-item-text">
+            <strong>agent.md per deployed agent</strong>
+            <span>Model · tools · memory · gates · rollback — the agent passport</span>
+          </div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-icon" style="background:rgba(155,138,240,0.1);">📄</div>
+          <div class="stack-item-text">
+            <strong>CLAUDE.md / AGENTS.md</strong>
+            <span>Repo-root runtime instructions — consumed by agents at execution time</span>
+          </div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-icon" style="background:rgba(125,232,196,0.1);">🗺️</div>
+          <div class="stack-item-text">
+            <strong>arc42 (when full docs needed)</strong>
+            <span>12-section standard for compliance-heavy or long-lived systems</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">The anti-pattern to avoid</div>
+      <p>The community has largely rejected Visio and heavy UML tooling for agentic systems. The core problem: <strong>if the diagram can't be updated in a pull request, it will go stale.</strong> Agentic architectures evolve on a weekly cadence — a diagram that lives outside the codebase becomes archaeology within a month. The other anti-pattern is the "everything connected to everything" spaghetti graph — technically accurate, but communicates nothing about intent or behavior. Pick one diagram per audience, keep it sparse, and let the prose do the rest.</p>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 5 — DESIGN PRINCIPLES
+  ══════════════════════════════════════════════ -->
+  <section>
+    <div class="section-label">05 — Guiding principles</div>
+    <h2>Four rules the community has learned the hard way</h2>
+
+    <div class="principle-grid">
+      <div class="principle-card">
+        <div class="principle-num">01</div>
+        <h3>One diagram per audience</h3>
+        <p>Never try to serve all stakeholders with a single diagram. The C4 model exists precisely to solve this: four zoom levels, four audiences. A board-level context diagram and a developer component diagram are different artefacts that should never be merged.</p>
+      </div>
+      <div class="principle-card">
+        <div class="principle-num">02</div>
+        <h3>Diagram source must live in git</h3>
+        <p>Any diagram whose source is a binary file (Visio, Lucidchart, Figma) will go stale. Mermaid, PlantUML and Structurizr DSL are text — they diff, merge, and get reviewed in PRs. For agentic systems that change weekly, this is non-negotiable.</p>
+      </div>
+      <div class="principle-card">
+        <div class="principle-num">03</div>
+        <h3>Document the why, not the what</h3>
+        <p>ADRs are the highest-leverage documentation investment. A developer six months from now doesn't need a diagram of what was built — the code does that. They need to know <em>why</em> LangGraph was chosen over CrewAI, and what trade-offs were accepted.</p>
+      </div>
+      <div class="principle-card">
+        <div class="principle-num">04</div>
+        <h3>Agents read docs too — write for them</h3>
+        <p>CLAUDE.md and AGENTS.md files are a new documentation layer that didn't exist two years ago. Mermaid flowcharts embedded in these files act as execution contracts — the agent reads the decision tree before writing a single line of code.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Agentic AI Format Selection Guide · April 2026 · For internal team use</p>
+  <p>Sources: GitHub · Medium · Substack · Google Cloud · Bain · CIO · The New Stack</p>
+</footer>
+
+</body>
+</html>
