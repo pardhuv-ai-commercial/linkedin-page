@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A practitioner guide to Singapore's Model AI Governance Framework for Agentic AI — what it requires, what it means for financial institutions, and how to close the gap between the framework and production reality.">
+<title>MAS & IMDA MGF — Agentic AI Governance Practitioner Guide · The Deployment Gap</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;0,600;1,300;1,500&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#0D0D0D;--bg2:#141414;--bg3:#1A1A1A;--bg4:#222;
+  --green:#00A651;--green2:#00843F;--green-dim:rgba(0,166,81,.09);--green-border:rgba(0,166,81,.22);
+  --white:#fff;--text:#E8E8E6;--text2:#A8A8A4;--text3:#686864;
+  --rule:rgba(255,255,255,.08);--rule2:rgba(255,255,255,.04);
+  --red:#C0301A;--redl:rgba(192,48,26,.12);--red-border:rgba(192,48,26,.25);
+  --amber:#B07820;--amberl:rgba(176,120,32,.12);--amber-border:rgba(176,120,32,.25);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.65;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(circle,rgba(255,255,255,.022) 1px,transparent 1px);background-size:32px 32px}
+.wrap{position:relative;z-index:1;max-width:1160px;margin:0 auto;padding:0 56px}
+@media(max-width:768px){.wrap{padding:0 22px}}
+
+/* HERO */
+#hero{padding:80px 0 68px;border-bottom:1px solid var(--rule);position:relative}
+#hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--green)}
+.hero-series{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--green);margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.hero-series::before{content:'';width:36px;height:1px;background:var(--green)}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(36px,5.5vw,68px);font-weight:300;line-height:1.0;color:var(--white);letter-spacing:-.02em;margin-bottom:12px}
+.hero-title em{font-style:italic;color:var(--green)}
+.hero-sub{font-size:17px;color:var(--text2);max-width:680px;line-height:1.8;font-weight:300;margin-bottom:32px}
+.hero-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:36px}
+.meta-tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--rule);color:var(--text3);padding:4px 10px}
+.meta-tag.g{border-color:var(--green-border);color:var(--green);background:var(--green-dim)}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);max-width:600px}
+.hs-item{background:var(--bg2);padding:18px 20px}
+.hs-n{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--green);line-height:1;margin-bottom:3px}
+.hs-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+
+/* SECTION SHELL */
+.sec{padding:64px 0;border-bottom:1px solid var(--rule)}
+.sec-ey{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--green);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.sec-ey::after{content:'';width:28px;height:1px;background:var(--green);opacity:.5}
+.sec-title{font-family:'Cormorant Garamond',serif;font-size:clamp(26px,3.5vw,40px);font-weight:300;color:var(--white);line-height:1.15;margin-bottom:8px}
+.sec-intro{font-size:15px;color:var(--text2);max-width:680px;line-height:1.85;margin-top:8px;font-weight:300}
+
+/* FRAMEWORK DIMENSIONS */
+.dim-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:32px}
+@media(max-width:700px){.dim-grid{grid-template-columns:1fr}}
+.dim-card{background:var(--bg2);padding:28px 26px;position:relative;overflow:hidden;transition:background .2s}
+.dim-card:hover{background:var(--bg3)}
+.dim-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--green)}
+.dim-n{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:300;color:rgba(0,166,81,.12);line-height:1;margin-bottom:10px}
+.dim-title{font-size:15px;font-weight:600;color:var(--white);margin-bottom:4px}
+.dim-sub{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:12px}
+.dim-desc{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300}
+.dim-actions{margin-top:14px}
+.dim-action{font-size:12px;color:var(--text2);padding:4px 0;border-bottom:1px solid var(--rule2);display:flex;gap:8px;line-height:1.45}
+.dim-action:last-child{border-bottom:none}
+.dim-action::before{content:'→';color:var(--green);flex-shrink:0;margin-top:1px}
+
+/* WHAT MAS WANTS TABLE */
+.req-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:28px}
+.req-table thead tr{background:var(--bg3);border-bottom:1px solid rgba(0,166,81,.3)}
+.req-table th{padding:12px 16px;text-align:left;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);font-weight:500}
+.req-table td{padding:12px 16px;border-bottom:1px solid var(--rule);vertical-align:top;color:var(--text2);line-height:1.6;font-weight:300}
+.req-table tbody tr:hover td{background:var(--bg2)}
+.req-table tbody tr:last-child td{border-bottom:none}
+.req-table td:first-child{font-weight:600;color:var(--text);font-size:12px}
+.status-pill{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:2px}
+.sp-binding{background:rgba(192,48,26,.15);color:#E8604A;border:1px solid rgba(192,48,26,.3)}
+.sp-voluntary{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.sp-expected{background:var(--amberl);color:#D4A020;border:1px solid var(--amber-border)}
+
+/* CALLOUT BOXES */
+.callout{padding:20px 24px;margin:24px 0;position:relative}
+.callout-red{border-left:3px solid var(--red);background:var(--redl)}
+.callout-green{border-left:3px solid var(--green);background:var(--green-dim)}
+.callout-amber{border-left:3px solid var(--amber);background:var(--amberl)}
+.callout-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:7px}
+.callout-red .callout-label{color:var(--red)}
+.callout-green .callout-label{color:var(--green)}
+.callout-amber .callout-label{color:var(--amber)}
+.callout p{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300}
+.callout strong{color:var(--text);font-weight:500}
+
+/* CHECKLIST */
+.checklist{list-style:none;margin-top:20px;display:flex;flex-direction:column;gap:0}
+.cl-item{padding:12px 16px;border-bottom:1px solid var(--rule);display:grid;grid-template-columns:24px 1fr auto;gap:12px;align-items:start;background:var(--bg2);font-size:13px;transition:background .15s}
+.cl-item:hover{background:var(--bg3)}
+.cl-item:first-child{border-top:1px solid var(--rule)}
+.cl-num{font-family:'DM Mono',monospace;font-size:9px;color:var(--green);padding-top:2px}
+.cl-text{color:var(--text2);line-height:1.55;font-weight:300}
+.cl-text strong{color:var(--text);font-weight:500}
+.cl-owner{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:2px 7px;border:1px solid var(--rule);white-space:nowrap;align-self:start;margin-top:2px}
+
+/* GAP ANALYSIS */
+.gap-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:28px}
+@media(max-width:700px){.gap-grid{grid-template-columns:1fr}}
+.gap-col{background:var(--bg2);padding:0}
+.gap-col-head{padding:16px 20px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--rule)}
+.gap-col:first-child .gap-col-head{color:var(--red)}
+.gap-col:last-child .gap-col-head{color:var(--green)}
+.gap-item{padding:12px 20px;border-bottom:1px solid var(--rule2);font-size:12px;color:var(--text2);line-height:1.5;font-weight:300;display:flex;gap:8px}
+.gap-item:last-child{border-bottom:none}
+.gap-item::before{flex-shrink:0;margin-top:2px;font-size:11px}
+.gap-col:first-child .gap-item::before{content:'✗';color:var(--red)}
+.gap-col:last-child .gap-item::before{content:'✓';color:var(--green)}
+
+/* TIMELINE */
+.timeline{margin-top:28px;position:relative;padding-left:32px}
+.timeline::before{content:'';position:absolute;left:0;top:8px;bottom:8px;width:1px;background:var(--rule)}
+.tl-item{margin-bottom:32px;position:relative}
+.tl-dot{position:absolute;left:-38px;top:4px;width:12px;height:12px;border-radius:50%;border:2px solid var(--green);background:var(--bg)}
+.tl-date{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:6px}
+.tl-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:4px}
+.tl-desc{font-size:13px;color:var(--text2);line-height:1.6;font-weight:300}
+
+/* POV */
+.pov-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:28px}
+@media(max-width:700px){.pov-grid{grid-template-columns:1fr}}
+.pov-card{background:var(--bg2);padding:26px 24px;position:relative;overflow:hidden}
+.pov-card::before{content:'"';position:absolute;top:-10px;left:14px;font-family:'Cormorant Garamond',serif;font-size:100px;font-weight:300;color:var(--green);opacity:.08;line-height:1}
+.pov-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:10px}
+.pov-quote{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500;font-style:italic;color:var(--white);line-height:1.45;margin-bottom:10px}
+.pov-text{font-size:12px;color:var(--text2);line-height:1.65;font-weight:300}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.fu{opacity:0;animation:fadeUp .5s ease forwards;animation-play-state:paused}
+.fu.d1{animation-delay:.08s}.fu.d2{animation-delay:.16s}.fu.d3{animation-delay:.24s}
+@media print{nav,footer{display:none}body{background:white;color:#111}body::before{display:none}}
+</style>
+</head>
+<body>
+
+<nav style="position:sticky;top:0;z-index:200;background:rgba(13,13,13,.96);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08);font-family:'DM Sans',sans-serif">
+  <div style="max-width:1160px;margin:0 auto;padding:0 56px;display:flex;align-items:center;justify-content:space-between;height:56px;gap:16px">
+    <a href="index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none">
+      <span style="font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.02em;color:#fff;font-weight:500">The <span style="color:#00A651">Deployment</span> Gap</span>
+      <span style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#686864;border:1px solid rgba(255,255,255,.08);padding:2px 8px">Pardhu V</span>
+    </a>
+    <div style="display:flex;gap:2px;align-items:center">
+      <a href="index.html" style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;color:#686864;padding:6px 12px;border-radius:3px" onmouseover="this.style.color='#E8E8E6';this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.color='#686864';this.style.background='transparent'">Home</a>
+      <a href="about.html" style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;color:#686864;padding:6px 12px;border-radius:3px" onmouseover="this.style.color='#E8E8E6';this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.color='#686864';this.style.background='transparent'">About</a>
+      <a href="index.html#publications" style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;color:#686864;padding:6px 12px;border-radius:3px" onmouseover="this.style.color='#E8E8E6';this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.color='#686864';this.style.background='transparent'">All Research</a>
+      <a href="https://www.linkedin.com/in/pardhusg/" target="_blank" style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;color:#00A651;padding:6px 12px;border-radius:3px;border:1px solid rgba(0,166,81,.22);background:rgba(0,166,81,.10)">LinkedIn &#8599;</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="wrap">
+    <div class="hero-series fu">Governance · Publication 05 · April 2026</div>
+    <h1 class="hero-title fu d1">Agentic AI Governance<br>for <em>APAC Financial Institutions</em><br>— An MGF Practitioner Guide</h1>
+    <p class="hero-sub fu d2">Singapore's Model AI Governance Framework for Agentic AI is the world's first. Most financial institutions have read the headline — few have mapped it to their actual deployment decisions. This guide does that mapping: what the MGF and MAS guidelines actually require, where the gaps are, and what "compliant" looks like in production.</p>
+    <div class="hero-meta fu d2">
+      <span class="meta-tag g">Governance</span>
+      <span class="meta-tag g">APAC</span>
+      <span class="meta-tag">IMDA MGF 2026</span>
+      <span class="meta-tag">MAS AI Risk Guidelines</span>
+      <span class="meta-tag">PDPA</span>
+      <span class="meta-tag">Financial Institutions</span>
+    </div>
+    <div class="hero-stats fu d3">
+      <div class="hs-item"><div class="hs-n">4</div><div class="hs-l">MGF dimensions</div></div>
+      <div class="hs-item"><div class="hs-n">9</div><div class="hs-l">MAS risk domains</div></div>
+      <div class="hs-item"><div class="hs-n">Jan '26</div><div class="hs-l">MGF launch date</div></div>
+      <div class="hs-item"><div class="hs-n">World #1</div><div class="hs-l">First agentic framework</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SEC 1 — CONTEXT -->
+<section class="sec" id="context">
+  <div class="wrap">
+    <div class="sec-ey">01 — Why this matters now</div>
+    <h2 class="sec-title">The regulatory picture just changed</h2>
+    <p class="sec-intro">On 22 January 2026, Singapore's Minister for Digital Development announced the Model AI Governance Framework for Agentic AI at the World Economic Forum — the world's first governance framework specifically designed for agentic AI systems. Simultaneously, MAS published proposed Guidelines on AI Risk Management for Financial Institutions. Both landed within weeks of each other. Together they define what regulators expect from financial institutions deploying autonomous AI agents.</p>
+
+    <div class="callout callout-amber" style="margin-top:28px">
+      <div class="callout-label">The compliance posture problem</div>
+      <p>Most financial institutions in APAC have agentic AI programs already running — chatbots with tool access, automated case management, model-driven alert triage. <strong>The MGF arrived after deployment, not before.</strong> The practical question is: how does what you have stack up against what the framework now expects?</p>
+    </div>
+
+    <div class="timeline" style="margin-top:40px">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">2019 — 2020</div>
+        <div class="tl-title">Model AI Governance Framework (original)</div>
+        <div class="tl-desc">IMDA's foundational framework for AI governance — principles-based, voluntary, focused on traditional ML systems. Introduced concepts of transparency, accountability, and human oversight that now underpin the agentic framework.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">May 2024</div>
+        <div class="tl-title">MGF for Generative AI</div>
+        <div class="tl-desc">Extended the framework to large language models and generative systems — covering hallucination, bias, IP, content provenance, and systemic risk across nine governance dimensions.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">November 2025</div>
+        <div class="tl-title">MAS AI Risk Management Guidelines (proposed)</div>
+        <div class="tl-desc">MAS published a consultation paper proposing principles-based guidelines covering nine risk domains for financial institutions — the sector-specific layer on top of IMDA's cross-sector framework. Public comment closed January 2026.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--green)"></div>
+        <div class="tl-date">22 January 2026 — Current</div>
+        <div class="tl-title">Model AI Governance Framework for Agentic AI</div>
+        <div class="tl-desc">The world's first governance framework specifically for agentic AI systems. Four dimensions, 22 specific guidance points, open for public feedback and case study submissions. Voluntary but increasingly functioning as a procurement and regulatory benchmark.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEC 2 — THE FOUR MGF DIMENSIONS -->
+<section class="sec" id="dimensions">
+  <div class="wrap">
+    <div class="sec-ey">02 — The framework</div>
+    <h2 class="sec-title">The four MGF dimensions — unpacked for practitioners</h2>
+    <p class="sec-intro">The MGF organises its guidance across four dimensions. Each dimension contains specific expectations for how financial institutions should design, deploy, and monitor agentic AI. These are not abstract principles — they translate directly into architecture decisions.</p>
+
+    <div class="dim-grid">
+
+      <div class="dim-card">
+        <div class="dim-n">01</div>
+        <div class="dim-title">Assess and bound the risks upfront</div>
+        <div class="dim-sub">Before deployment · use-case selection · privilege scoping</div>
+        <div class="dim-desc">Before deploying an agent, organisations must conduct rigorous risk assessment considering: domain tolerance for error, exposure to sensitive data, reversibility of actions, level of autonomy, and task complexity. Agents must have unique identities tied to supervising users or agents for accountability.</div>
+        <div class="dim-actions">
+          <div class="dim-action">Limit agent access to minimum required tools and data — deny-by-default</div>
+          <div class="dim-action">Define standard operating procedures for agent decision-making</div>
+          <div class="dim-action">Design offline mechanisms for malfunctions — kill switch required</div>
+          <div class="dim-action">Conduct threat modelling: memory poisoning, tool misuse, privilege escalation</div>
+          <div class="dim-action">Assign unique agent identities — traceable to a human supervisor</div>
+        </div>
+      </div>
+
+      <div class="dim-card">
+        <div class="dim-n">02</div>
+        <div class="dim-title">Make humans meaningfully accountable</div>
+        <div class="dim-sub">HITL design · automation bias · responsibility allocation</div>
+        <div class="dim-desc">The MGF emphasises human accountability as paramount. Multiple actors across the agent lifecycle can diffuse accountability — this must be explicitly prevented. Organisations must define significant checkpoints requiring human approval and actively combat automation bias through training and audit.</div>
+        <div class="dim-actions">
+          <div class="dim-action">Define clear responsibility allocation across all parties in the agent chain</div>
+          <div class="dim-action">Implement contractual accountability provisions for external vendors</div>
+          <div class="dim-action">Human approval gates at checkpoints defined by risk level — not just "HITL" as a checkbox</div>
+          <div class="dim-action">Regular audits of HITL effectiveness — are approvals substantive or rubber stamps?</div>
+          <div class="dim-action">Anti-automation-bias training for all staff who approve agent actions</div>
+        </div>
+      </div>
+
+      <div class="dim-card">
+        <div class="dim-n">03</div>
+        <div class="dim-title">Implement technical controls throughout lifecycle</div>
+        <div class="dim-sub">Testing · monitoring · access control · change management</div>
+        <div class="dim-desc">Technical controls must be implemented across the full agent lifecycle — development, deployment, and ongoing operation. Testing must adapt for agentic-specific risks beyond standard software QA. Agents should be prompted to reflect on and log their plans for evaluation during development.</div>
+        <div class="dim-actions">
+          <div class="dim-action">Baseline testing before production — including agentic-specific test cases</div>
+          <div class="dim-action">Whitelisted tool access enforced at infrastructure level — not in agent code</div>
+          <div class="dim-action">Real-time monitoring of agent behaviour with escalation protocols</div>
+          <div class="dim-action">Change management: document, test, and audit every update to agent configuration</div>
+          <div class="dim-action">Incident response playbooks specific to agent failure modes</div>
+        </div>
+      </div>
+
+      <div class="dim-card">
+        <div class="dim-n">04</div>
+        <div class="dim-title">Enable end-user responsibility</div>
+        <div class="dim-sub">Transparency · training · override capability</div>
+        <div class="dim-desc">End users — whether compliance analysts, relationship managers, or customers — must understand what agents can and cannot do, and how to override them. The MGF flags this as a governance gap in most current deployments: organisations invest heavily in the agent stack and almost nothing in user education and control design.</div>
+        <div class="dim-actions">
+          <div class="dim-action">Clear disclosure when users are interacting with an AI agent</div>
+          <div class="dim-action">Documented user override mechanism — humans can take over any agent task</div>
+          <div class="dim-action">Training on agent capabilities, limitations, and when to escalate</div>
+          <div class="dim-action">Plain-language explanations of agent decisions — accessible to non-technical staff</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SEC 3 — MAS RISK DOMAINS -->
+<section class="sec" id="mas">
+  <div class="wrap">
+    <div class="sec-ey">03 — MAS layer</div>
+    <h2 class="sec-title">What MAS expects — the nine risk domains</h2>
+    <p class="sec-intro">The MAS AI Risk Management Guidelines (proposed November 2025, closed for comment January 2026) sit above the MGF as the financial-sector-specific layer. They are principles-based and risk-proportionate — but MAS places accountability with boards and senior management, which makes these expectation-setting documents, not optional reading.</p>
+
+    <div style="overflow-x:auto;border:1px solid var(--rule);border-radius:6px">
+      <table class="req-table">
+        <thead>
+          <tr>
+            <th>MAS risk domain</th>
+            <th>What MAS expects</th>
+            <th>Agentic AI implication</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Model &amp; performance risk</td>
+            <td>Accuracy, robustness, appropriate model choice for the task</td>
+            <td>Agent model selection must be documented — why this LLM for this agent role, at this autonomy level</td>
+            <td><span class="status-pill sp-expected">Expected</span></td>
+          </tr>
+          <tr>
+            <td>Data governance</td>
+            <td>Data provenance, quality, lineage, PDPA compliance</td>
+            <td>Every piece of data an agent can access must be classified and audited. Cross-boundary data transfers require PII scrubbing documented in the audit trail</td>
+            <td><span class="status-pill sp-expected">Expected</span></td>
+          </tr>
+          <tr>
+            <td>Fairness &amp; bias</td>
+            <td>Assessment and mitigation of discriminatory outcomes</td>
+            <td>For AML/KYC agents: false positive disparity across customer segments must be monitored. Analyst feedback rate is a proxy metric — if certain segments produce fewer feedback signals, model bias may be accumulating</td>
+            <td><span class="status-pill sp-expected">Expected</span></td>
+          </tr>
+          <tr>
+            <td>Transparency &amp; explainability</td>
+            <td>Internal explanations of model decisions; customer-facing where appropriate</td>
+            <td>Every agent action must be reconstructable — prompt, tool call, output, approval. "The model decided" is not an acceptable explanation to a MAS examiner</td>
+            <td><span class="status-pill sp-binding">Scrutinised</span></td>
+          </tr>
+          <tr>
+            <td>Human oversight &amp; control</td>
+            <td>Defined HITL thresholds; duties for human reviewers</td>
+            <td>The autonomy level registry (Observe / Recommend / Act-with-approval / Act-autonomously) must be documented, board-approved, and enforced at infrastructure level — not just stated in policy</td>
+            <td><span class="status-pill sp-binding">Scrutinised</span></td>
+          </tr>
+          <tr>
+            <td>Third-party &amp; vendor risk</td>
+            <td>Contractual and operational safeguards for external models and services</td>
+            <td>Every vendor whose AI component an agent calls — LLM API, typology library, screening service — must be assessed. MAS expects the same rigour applied to third-party AI as to third-party systems generally</td>
+            <td><span class="status-pill sp-binding">Scrutinised</span></td>
+          </tr>
+          <tr>
+            <td>Cybersecurity &amp; model security</td>
+            <td>Protections against data exfiltration, model inversion, poisoning, adversarial attacks</td>
+            <td>Prompt injection via agent inputs is the primary new attack surface. Fail-closed prompt injection guards are not optional — they are a cybersecurity control, not a nice-to-have</td>
+            <td><span class="status-pill sp-expected">Expected</span></td>
+          </tr>
+          <tr>
+            <td>Monitoring &amp; change management</td>
+            <td>Continuous performance monitoring; documented change controls</td>
+            <td>The Evaluator Agent pattern (72-hour post-fix metric monitoring) directly satisfies this. Without it, change management for AI model updates relies on manual observation</td>
+            <td><span class="status-pill sp-expected">Expected</span></td>
+          </tr>
+          <tr>
+            <td>Incident response &amp; escalation</td>
+            <td>Playbooks for model failure and customer harm</td>
+            <td>Every known failure mode (see Deployment Gap publication 01) must have a documented response playbook. "We didn't know this could happen" is not a defence when the failure mode is well-documented in the industry</td>
+            <td><span class="status-pill sp-expected">Expected</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-red" style="margin-top:24px">
+      <div class="callout-label">The examiner's three questions</div>
+      <p>MAS examiners will ask: <strong>"How do you know what your AI agent did? Why did it do it? Should it have?"</strong> If you cannot answer all three with specific, documented evidence, you have a finding. Traditional audit trails record that a user logged in and made a change. Agentic audit trails must record the agent's reasoning chain, every tool call, the data it accessed, and the human approval decision — all linked by a single incident ID.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SEC 4 — GAP ANALYSIS -->
+<section class="sec" id="gaps">
+  <div class="wrap">
+    <div class="sec-ey">04 — Gap analysis</div>
+    <h2 class="sec-title">Where most financial institutions fall short</h2>
+    <p class="sec-intro">Based on observed deployment patterns across APAC financial institutions and the failure modes documented in production, these are the gaps between current practice and MGF/MAS expectations. Most organisations have addressed the first column partially — very few have addressed it completely.</p>
+
+    <div class="gap-grid">
+      <div class="gap-col">
+        <div class="gap-col-head">Current state — what most FIs have</div>
+        <div class="gap-item">HITL gate exists but is a rubber-stamp — analysts approve 40+ requests/day without review</div>
+        <div class="gap-item">Audit trail scattered across Teams, email, ITSM — no single linked incident chain</div>
+        <div class="gap-item">Agent permissions defined in code — engineers can change them with a PR, no board visibility</div>
+        <div class="gap-item">Vendor AI components assessed at procurement — not continuously monitored post-deployment</div>
+        <div class="gap-item">Prompt injection guard absent or advisory — fails open, not closed</div>
+        <div class="gap-item">Explainability covers model outputs — agent reasoning chain (prompt + tool calls + result) not retained</div>
+        <div class="gap-item">User training on AI tools generic — no specific guidance on when to override agents</div>
+        <div class="gap-item">Autonomy levels described in policy — not enforced at infrastructure layer</div>
+      </div>
+      <div class="gap-col">
+        <div class="gap-col-head">MGF/MAS required state — what good looks like</div>
+        <div class="gap-item">HITL volume monitored as a KPI — if analyst sees &gt;15 requests/day, workflow reviewed for over-automation</div>
+        <div class="gap-item">Shared incident ID links every platform action — single reconstructable timeline for examiners</div>
+        <div class="gap-item">Permissions enforced by OPA policy at infrastructure level — board-signed, PR-controlled, auditable</div>
+        <div class="gap-item">Third-party AI assessed on the same cycle as third-party systems — annual minimum, trigger-based on incidents</div>
+        <div class="gap-item">Prompt injection guard is fail-closed — any uncertain input routes to HITL, not through to the agent</div>
+        <div class="gap-item">Full LLM call log retained: prompt + response + tool calls — reasoning chain reconstructable post-incident</div>
+        <div class="gap-item">Role-specific training: compliance analyst, operations, customer-facing staff — each knows their override pathway</div>
+        <div class="gap-item">Autonomy level registry enforced by infrastructure — code change cannot grant new permissions without policy update</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEC 5 — PRACTITIONER CHECKLIST -->
+<section class="sec" id="checklist">
+  <div class="wrap">
+    <div class="sec-ey">05 — Action checklist</div>
+    <h2 class="sec-title">What to do — in the right order</h2>
+    <p class="sec-intro">Prioritised by regulatory urgency and implementation effort. Start with items 1–5 before your next MAS examination cycle. Items 6–12 form the fuller programme for institutions moving from pilot to scaled agentic deployment.</p>
+
+    <ul class="checklist">
+      <li class="cl-item">
+        <span class="cl-num">01</span>
+        <span class="cl-text"><strong>Document your current agent inventory</strong> — every agent or near-agent system in production. Name, function, autonomy level, tools it has access to, and whether it was covered in your last model risk review. This is what MAS will ask for first.</span>
+        <span class="cl-owner">Risk / CRO</span>
+      </li>
+      <li class="cl-item">
+        <span class="cl-num">02</span>
+        <span class="cl-text"><strong>Classify each agent's autonomy level</strong> using the four-tier registry (Observe / Recommend / Act-with-approval / Act-autonomously). If you have agents operating autonomously without documented board approval, that is the highest-priority finding.</span>
+        <span class="cl-owner">AI Governance</span>
+      </li>
+      <li class="cl-item">
+        <span class="cl-num">03</span>
+        <span class="cl-text"><strong>Audit your HITL gate quality</strong> — not just whether it exists. How many approvals per analyst per day? What percentage are reviewed vs. clicked through? This is automation bias in action and MAS will probe it.</span>
+        <span class="cl-owner">Compliance</span>
+      </li>
+      <li class="cl-item">
+        <span class="cl-num">04</span>
+        <span class="cl-text"><strong>Establish a shared incident ID standard</strong> across all platforms any agent touches — ITSM, communication tools, audit SIEM. The ability to reconstruct a complete incident timeline from a single ID is now a regulatory expectation.</span>
+        <span class="cl-owner">Technology / CISO</span>
+      </li>
+      <li class="cl-item">
+        <span class="cl-num">05</span>
+        <span class="cl-text"><strong>Implement prompt injection guard as fail-closed</strong> on every agent that takes external input. This includes agents that process AML alert narratives, customer communications, or any field editable by parties outside the institution.</span>
+        <span class="cl-owner">Security / Engineering</span>
+      </li>
+      <li class="cl-item">
+        <span class="cl-num">06</span>
+        <span class="cl-text"><strong>Move agent permissions to infrastructure-level enforcement</strong> (OPA or equivalent) — away from agent code. Engineers should not be able to grant an agent new tool access without a policy file change that goes through change management.</span>
+        <span class="cl-owner">Engineering / Architecture</span>
+      </li>
+      <li class="cl-item">
+        <span class="cl-num">07</span>
+        <span class="cl-text"><strong>Retain full LLM call logs</strong> — prompt, response, tool calls, intermediate reasoning. Not just the final output. This is the evidence base for explainability when an examiner asks why an agent cleared a specific transaction or suppressed an alert.</span>
+        <span class="cl-owner">Technology / Compliance</span>
+      </li>
+      <li class="cl-item">
+        <span class="cl-num">08</span>
+        <span class="cl-text"><strong>Apply third-party AI vendor assessment</strong> to every component in your agent chain — LLM API, typology library, screening service, embedding model. MAS third-party risk management guidance applies to AI components.</span>
+        <span class="cl-owner">Procurement / Risk</span>
+      </li>
+      <li class="cl-item">
+        <span class="cl-num">09</span>
+        <span class="cl-text"><strong>Monitor analyst feedback volume as a leading indicator</strong> of model drift and automation bias. A drop in feedback rate — even without a model performance alert — signals degradation in the human oversight loop.</span>
+        <span class="cl-owner">AI Operations</span>
+      </li>
+      <li class="cl-item">
+        <span class="cl-num">10</span>
+        <span class="cl-text"><strong>Design role-specific user training</strong> for each staff group that interacts with or is affected by agents — compliance analysts, operations staff, customer-facing teams. Each group needs different override and escalation guidance.</span>
+        <span class="cl-owner">L&amp;D / Compliance</span>
+      </li>
+      <li class="cl-item">
+        <span class="cl-num">11</span>
+        <span class="cl-text"><strong>Submit feedback or a case study to IMDA</strong> on the MGF. The framework is explicitly a living document. Contributors are acknowledged. This is how Singapore's governance standards get shaped — and it positions your institution as a responsible innovator.</span>
+        <span class="cl-owner">Government Affairs / CTO</span>
+      </li>
+      <li class="cl-item">
+        <span class="cl-num">12</span>
+        <span class="cl-text"><strong>Schedule a formal Agentic Architecture Review</strong> within 90 days — covering all items above. Board-level AI risk reporting on agents and their autonomy levels is a MAS expectation. This review provides the evidence base for that reporting.</span>
+        <span class="cl-owner">CRO / CTO / Board</span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- SEC 6 — PRACTITIONER POV -->
+<section class="sec" id="pov" style="border-bottom:none">
+  <div class="wrap">
+    <div class="sec-ey">06 — Practitioner positions</div>
+    <h2 class="sec-title">How I read this landscape</h2>
+    <p class="sec-intro">Positions formed at the intersection of enterprise AI sales, technical architecture, and live deployment across APAC — not legal advice, but practitioner perspective on what actually matters.</p>
+
+    <div class="pov-grid">
+      <div class="pov-card">
+        <div class="pov-label">On the MGF's voluntary status</div>
+        <div class="pov-quote">"Voluntary frameworks don't stay voluntary for long in Singapore — ask anyone who ignored the 2019 edition"</div>
+        <div class="pov-text">IMDA's frameworks are formally non-binding but increasingly function as benchmarks in procurement, contracting, and regulatory discussions. The 2019 Model Framework was voluntary. By 2022 it was a de-facto procurement requirement for government-linked contracts. The Agentic AI MGF will follow the same path — faster, given the political urgency around AI governance.</div>
+      </div>
+      <div class="pov-card">
+        <div class="pov-label">On the governance gap statistic</div>
+        <div class="pov-quote">"Only 14% of Singapore organisations have mature agentic AI governance — that's not a warning, it's a competitive window"</div>
+        <div class="pov-text">72% plan to deploy agentic AI within two years. 14% have mature governance. The institutions that close this gap first don't just reduce regulatory risk — they become the reference standard that regulators and peers will benchmark against. This is a first-mover opportunity, not just a compliance obligation.</div>
+      </div>
+      <div class="pov-card">
+        <div class="pov-label">On HITL design</div>
+        <div class="pov-quote">"The worst HITL implementation is the one that exists on paper but creates automation bias in practice"</div>
+        <div class="pov-text">91% of compliance decision-makers say they'd compromise explainability for greater automation (industry survey, 2025). That is the statistic that concerns me most. A HITL gate that generates 40 approval requests per analyst per day is not oversight — it is liability coverage. MAS is right to probe the quality, not just the existence, of human review.</div>
+      </div>
+      <div class="pov-card">
+        <div class="pov-label">On commercial implications</div>
+        <div class="pov-quote">"Governance-ready agentic AI will command a premium — the market is about to bifurcate"</div>
+        <div class="pov-text">Financial institutions that demonstrate MGF/MAS alignment will be able to move faster — not slower. Regulators reward demonstrated responsibility with faster approval cycles, greater deployment latitude, and access to industry pilots like Project MindForge. The compliance cost is real. The regulatory dividend for doing it right is larger.</div>
+      </div>
+    </div>
+
+    <div class="callout callout-green" style="margin-top:32px">
+      <div class="callout-label">Continue the conversation</div>
+      <p>Have you mapped your agentic AI deployments against the MGF? Found gaps the framework doesn't address? Encountered examiner questions not covered here? <strong><a href="https://www.linkedin.com/in/pardhusg/" target="_blank" style="color:var(--green)">Connect on LinkedIn</a></strong> — this guide is updated as the regulatory picture evolves.</p>
+    </div>
+  </div>
+</section>
+
+<footer style="border-top:1px solid rgba(255,255,255,.08);padding:24px 0;background:#141414">
+  <div style="max-width:1160px;margin:0 auto;padding:0 56px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+    <a href="index.html" style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:#fff;text-decoration:none">The <span style="color:#00A651">Deployment</span> Gap</a>
+    <p style="font-family:'DM Mono',monospace;font-size:10px;color:#686864;letter-spacing:.06em">Pardhu V &nbsp;&middot;&nbsp; <a href="https://www.linkedin.com/in/pardhusg/" target="_blank" style="color:#00A651;text-decoration:none">linkedin.com/in/pardhusg</a> &nbsp;&middot;&nbsp; Singapore &nbsp;&middot;&nbsp; 2026</p>
+  </div>
+</footer>
+
+<script>
+const io=new IntersectionObserver(e=>{e.forEach(en=>{if(en.isIntersecting)en.target.style.animationPlayState='running'})},{threshold:.06});
+document.querySelectorAll('.fu').forEach(el=>{el.style.animationPlayState='paused';io.observe(el)});
+</script>
+</body>
+</html>

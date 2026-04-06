@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A field case study on the multi-party AI support deadlock — the structural friction when an AI model degrades and four organisations must coordinate to fix it across incompatible security boundaries, communication platforms, and knowledge silos.">
+<title>The Multi-Party Support Deadlock — Field Case Study · The Deployment Gap</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;0,600;1,300;1,500&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#0D0D0D;--bg2:#141414;--bg3:#1A1A1A;--bg4:#222;
+  --green:#00A651;--green2:#00843F;--green-dim:rgba(0,166,81,.09);--green-border:rgba(0,166,81,.22);
+  --white:#fff;--text:#E8E8E6;--text2:#A8A8A4;--text3:#686864;
+  --rule:rgba(255,255,255,.08);--rule2:rgba(255,255,255,.04);
+  --red:#C0301A;--redl:rgba(192,48,26,.12);--red-border:rgba(192,48,26,.25);
+  /* party colours */
+  --fi:#1A4A9E;--fil:rgba(26,74,158,.15);--fib:rgba(26,74,158,.3);
+  --vendor:#005F40;--vendorl:rgba(0,95,64,.15);--vendorb:rgba(0,95,64,.3);
+  --si:#8A4A00;--sil:rgba(138,74,0,.15);--sib:rgba(138,74,0,.3);
+  --infra:#1A4A1A;--infral:rgba(26,74,26,.15);--infrab:rgba(26,74,26,.3);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.65;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(circle,rgba(255,255,255,.022) 1px,transparent 1px);background-size:32px 32px}
+.wrap{position:relative;z-index:1;max-width:1160px;margin:0 auto;padding:0 56px}
+@media(max-width:768px){.wrap{padding:0 22px}}
+
+/* HERO */
+#hero{padding:80px 0 68px;border-bottom:1px solid var(--rule);position:relative}
+#hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--green)}
+.hero-series{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--green);margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.hero-series::before{content:'';width:36px;height:1px;background:var(--green)}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(36px,5.5vw,68px);font-weight:300;line-height:1.0;color:var(--white);letter-spacing:-.02em;margin-bottom:12px}
+.hero-title em{font-style:italic;color:var(--green)}
+.hero-sub{font-size:17px;color:var(--text2);max-width:680px;line-height:1.8;font-weight:300;margin-bottom:32px}
+.hero-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:36px}
+.meta-tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--rule);color:var(--text3);padding:4px 10px}
+.meta-tag.g{border-color:var(--green-border);color:var(--green);background:var(--green-dim)}
+
+/* PARTY LEGEND */
+.party-legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+.party-pill{display:flex;align-items:center;gap:7px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.party-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* SECTION SHELL */
+.sec{padding:64px 0;border-bottom:1px solid var(--rule)}
+.sec-ey{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--green);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.sec-ey::after{content:'';width:28px;height:1px;background:var(--green);opacity:.5}
+.sec-title{font-family:'Cormorant Garamond',serif;font-size:clamp(26px,3.5vw,40px);font-weight:300;color:var(--white);line-height:1.15;margin-bottom:8px}
+.sec-intro{font-size:15px;color:var(--text2);max-width:680px;line-height:1.85;margin-top:8px;font-weight:300}
+
+/* FRICTION CARDS */
+.friction-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:32px}
+@media(max-width:700px){.friction-grid{grid-template-columns:1fr}}
+.fc{background:var(--bg2);padding:26px 24px;position:relative;transition:background .2s}
+.fc:hover{background:var(--bg3)}
+.fc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.fc.fi::before{background:var(--fi)}
+.fc.vendor::before{background:var(--vendor)}
+.fc.si::before{background:var(--si)}
+.fc.infra::before{background:var(--infra)}
+.fc-n{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:300;line-height:1;margin-bottom:10px;opacity:.2;color:var(--text)}
+.fc-title{font-size:15px;font-weight:600;color:var(--white);margin-bottom:4px}
+.fc-sub{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+.fc.fi .fc-sub{color:#6A8FD4}
+.fc.vendor .fc-sub{color:#3A9970}
+.fc.si .fc-sub{color:#C08040}
+.fc.infra .fc-sub{color:#3A8A3A}
+.fc-desc{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300;margin-bottom:12px}
+.forum-quote{font-size:11px;font-style:italic;color:var(--text3);border-top:1px solid var(--rule);padding-top:10px;margin-top:10px;line-height:1.55}
+.forum-quote::before{content:'"';font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--green);opacity:.5;margin-right:4px;line-height:1}
+
+/* BEFORE / AFTER TIMELINE */
+.ba-grid{display:grid;grid-template-columns:1fr 48px 1fr;gap:0;margin-top:32px;align-items:start}
+@media(max-width:700px){.ba-grid{grid-template-columns:1fr;gap:16px}}
+.ba-col{background:var(--bg2);padding:24px}
+.ba-head{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--rule)}
+.ba-col:first-child .ba-head{color:var(--red)}
+.ba-col:last-child .ba-head{color:var(--green)}
+.ba-divider{display:flex;align-items:center;justify-content:center;background:var(--bg3);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.ba-arrow{font-size:22px;color:var(--green)}
+.ba-step{display:flex;gap:10px;margin-bottom:12px;font-size:13px;color:var(--text2);font-weight:300;line-height:1.5}
+.ba-time{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;color:var(--text3);flex-shrink:0;padding-top:2px;min-width:44px}
+.ba-text strong{color:var(--text);font-weight:500}
+
+/* AGENT FLOW */
+.flow-wrap{margin-top:32px;border:1px solid var(--rule);overflow:hidden}
+.flow-header{background:var(--bg3);padding:14px 20px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);display:flex;align-items:center;justify-content:space-between}
+.flow-step{display:grid;grid-template-columns:80px 1fr auto;border-bottom:1px solid var(--rule);background:var(--bg2);transition:background .15s}
+.flow-step:hover{background:var(--bg3)}
+.flow-step:last-child{border-bottom:none}
+.fs-time{padding:16px 16px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.06em;color:var(--green);border-right:1px solid var(--rule);display:flex;align-items:center}
+.fs-body{padding:14px 18px}
+.fs-agent{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.fs-title{font-size:13px;font-weight:600;color:var(--white);margin-bottom:3px}
+.fs-desc{font-size:12px;color:var(--text2);line-height:1.5;font-weight:300}
+.fs-owner{padding:16px 16px;display:flex;align-items:center;justify-content:flex-end;border-left:1px solid var(--rule)}
+.owner-tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);color:var(--text3);white-space:nowrap}
+.owner-tag.fi{border-color:var(--fib);color:#6A8FD4;background:var(--fil)}
+.owner-tag.vendor{border-color:var(--vendorb);color:#3A9970;background:var(--vendorl)}
+.owner-tag.si{border-color:var(--sib);color:#C08040;background:var(--sil)}
+.owner-tag.shared{border-color:var(--green-border);color:var(--green);background:var(--green-dim)}
+
+/* RESULTS */
+.results-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:28px}
+@media(max-width:700px){.results-grid{grid-template-columns:repeat(2,1fr)}}
+.r-item{background:var(--bg2);padding:22px 20px}
+.r-n{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:300;color:var(--green);line-height:1;margin-bottom:4px}
+.r-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+.r-s{font-size:12px;color:var(--text2);margin-top:3px;font-weight:300}
+
+/* CALLOUT */
+.callout{padding:20px 24px;margin:24px 0}
+.callout-green{border-left:3px solid var(--green);background:var(--green-dim)}
+.callout-red{border-left:3px solid var(--red);background:var(--redl)}
+.callout-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:7px}
+.callout-green .callout-label{color:var(--green)}
+.callout-red .callout-label{color:var(--red)}
+.callout p{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300}
+.callout strong{color:var(--text);font-weight:500}
+
+/* LESSONS */
+.lesson-list{margin-top:28px;display:flex;flex-direction:column;gap:0}
+.lesson{border-bottom:1px solid var(--rule);padding:20px 0;display:grid;grid-template-columns:32px 1fr;gap:16px}
+.lesson:last-child{border-bottom:none}
+.lesson-n{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:rgba(0,166,81,.3);line-height:1}
+.lesson-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:5px}
+.lesson-desc{font-size:13px;color:var(--text2);line-height:1.65;font-weight:300}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.fu{opacity:0;animation:fadeUp .5s ease forwards;animation-play-state:paused}
+.fu.d1{animation-delay:.08s}.fu.d2{animation-delay:.16s}.fu.d3{animation-delay:.24s}
+@media print{nav,footer{display:none}body{background:white;color:#111}body::before{display:none}}
+</style>
+</head>
+<body>
+
+<nav style="position:sticky;top:0;z-index:200;background:rgba(13,13,13,.96);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08);font-family:'DM Sans',sans-serif">
+  <div style="max-width:1160px;margin:0 auto;padding:0 56px;display:flex;align-items:center;justify-content:space-between;height:56px;gap:16px">
+    <a href="index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none">
+      <span style="font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.02em;color:#fff;font-weight:500">The <span style="color:#00A651">Deployment</span> Gap</span>
+      <span style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#686864;border:1px solid rgba(255,255,255,.08);padding:2px 8px">Pardhu V</span>
+    </a>
+    <div style="display:flex;gap:2px;align-items:center">
+      <a href="index.html" style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;color:#686864;padding:6px 12px;border-radius:3px" onmouseover="this.style.color='#E8E8E6';this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.color='#686864';this.style.background='transparent'">Home</a>
+      <a href="about.html" style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;color:#686864;padding:6px 12px;border-radius:3px" onmouseover="this.style.color='#E8E8E6';this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.color='#686864';this.style.background='transparent'">About</a>
+      <a href="index.html#publications" style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;color:#686864;padding:6px 12px;border-radius:3px" onmouseover="this.style.color='#E8E8E6';this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.color='#686864';this.style.background='transparent'">All Research</a>
+      <a href="https://www.linkedin.com/in/pardhusg/" target="_blank" style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;color:#00A651;padding:6px 12px;border-radius:3px;border:1px solid rgba(0,166,81,.22);background:rgba(0,166,81,.10)">LinkedIn &#8599;</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="wrap">
+    <div class="hero-series fu">Case Study · Publication 06 · April 2026</div>
+    <h1 class="hero-title fu d1">The Multi-Party<br><em>Support Deadlock</em></h1>
+    <p class="hero-sub fu d2">When an AI model degrades in a regulated financial environment, fixing it requires coordinating four organisations across incompatible security boundaries, communication platforms, and knowledge silos. This is not a skills problem. It is an architecture problem — and agentic AI is the integration layer that was always missing.</p>
+    <div class="hero-meta fu d2">
+      <span class="meta-tag g">Case Study</span>
+      <span class="meta-tag g">Field Observations</span>
+      <span class="meta-tag">AML Operations</span>
+      <span class="meta-tag">Multi-party AI</span>
+      <span class="meta-tag">MTTR reduction</span>
+      <span class="meta-tag">Agentic Mesh</span>
+    </div>
+
+    <div class="party-legend fu d3">
+      <div class="party-pill"><div class="party-dot" style="background:#4A72BE"></div><span style="color:#A8A8A4">Financial Institution — solution owner · regulator-facing · data custodian</span></div>
+      <div class="party-pill"><div class="party-dot" style="background:#3A9970"></div><span style="color:#A8A8A4">AI/ML Vendor — model brain · typology library · product knowledge</span></div>
+      <div class="party-pill"><div class="party-dot" style="background:#C08040"></div><span style="color:#A8A8A4">System Integrator — L1/L2 support · change management · frontline ops</span></div>
+      <div class="party-pill"><div class="party-dot" style="background:#3A8A3A"></div><span style="color:#A8A8A4">Infrastructure Provider — on-prem compute · telemetry · data residency</span></div>
+    </div>
+
+    <div class="callout-red callout fu d3">
+      <div class="callout-label">The scenario</div>
+      <p>An AML transaction monitoring model begins generating a false-positive spike. Alert volume triples in 4 hours. Three compliance analysts are pulled from case work to triage. Nobody knows if it's a model issue, an infrastructure issue, a data feed issue, or an upstream schema change. <strong>Every party has a piece of the answer. Nobody has the whole picture. Nobody can see what the others see.</strong> This is the multi-party support deadlock — and it plays out across regulated financial institutions in APAC every week.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SEC 1 — THE FOUR FRICTIONS -->
+<section class="sec" id="frictions">
+  <div class="wrap">
+    <div class="sec-ey">01 — The problem</div>
+    <h2 class="sec-title">The four structural frictions</h2>
+    <p class="sec-intro">These are not random failures. They are the predictable consequences of an architecture where each layer of the AI stack is owned by a different organisation, each with incompatible security, communication, and knowledge systems.</p>
+
+    <div class="friction-grid">
+      <div class="fc fi">
+        <div class="fc-n">01</div>
+        <div class="fc-title">The Two-Screen Problem</div>
+        <div class="fc-sub">Physical + Security Isolation</div>
+        <div class="fc-desc">Air-gapped production environments give analysts access to live logs but prevent external access. Support engineers physically operate two laptops — one with production data, one with vendor access — manually transcribing stack traces, model outputs, and telemetry between screens. JIT access approval adds a 2–4 hour dead zone before any vendor can begin diagnosis.</div>
+        <div class="forum-quote">We spent more time getting access than fixing the issue. By the time the vendor could log in, the model had already auto-recovered — but nobody knew why it broke. — Production engineer, Asia-Pacific bank (Reddit r/mlops)</div>
+      </div>
+      <div class="fc vendor">
+        <div class="fc-n">02</div>
+        <div class="fc-title">The Three-Ticket Problem</div>
+        <div class="fc-sub">Cross-Platform Context Decay</div>
+        <div class="fc-desc">Financial institutions run on MS Teams or Slack. AI/ML vendors use enterprise email and Jira. System integrators use ITSM platforms. When a fix is identified in one system it must be manually re-entered in all others — each re-entry losing nuance and breaking the audit chain. Reconstructing a timeline for a MAS examiner takes days.</div>
+        <div class="forum-quote">After an incident our regulator asked for a timeline. I had to stitch together three Slack threads, two email chains and a ServiceNow ticket. It took a week. — Compliance officer, Singapore bank (LinkedIn, 2025)</div>
+      </div>
+      <div class="fc si">
+        <div class="fc-n">03</div>
+        <div class="fc-title">The Knowledge Gradient Problem</div>
+        <div class="fc-sub">Expertise Dilution at the Frontline</div>
+        <div class="fc-desc">Frontline L1/L2 support lacks the ML domain knowledge to diagnose model drift, false-positive threshold failures, or typology mismatches. Without access to the AI vendor's internal knowledge base — model versioning history, typology library, known failure patterns — they apply generic IT fixes to highly specialised AI problems.</div>
+        <div class="forum-quote">L1 kept restarting the service. The actual issue was a data schema change in the upstream feed silently corrupting feature vectors. You can't find that without knowing the model. — ML engineer, AML vendor (HackerNews, 2025)</div>
+      </div>
+      <div class="fc infra">
+        <div class="fc-n">04</div>
+        <div class="fc-title">The Black-Box Regulator Problem</div>
+        <div class="fc-sub">Explainability Debt</div>
+        <div class="fc-desc">When a model suppresses a suspicious transaction, the institution must demonstrate why — but the decision chain lives in a neural network with no queryable audit log. Agentic AI compounds this: multi-step autonomous decisions are even harder to reconstruct post-hoc. 95% of compliance leaders are comfortable compromising explainability for automation — until the examiner arrives.</div>
+        <div class="forum-quote">The examiner's exact words: 'Show me why your model cleared this transaction.' We couldn't. — CCO, European bank (ACAMS conference, 2025)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEC 2 — BEFORE / AFTER -->
+<section class="sec" id="comparison">
+  <div class="wrap">
+    <div class="sec-ey">02 — The resolution gap</div>
+    <h2 class="sec-title">What the same incident looks like — manual vs. agentic</h2>
+    <p class="sec-intro">The incident: AML false-positive rate spikes 3× over 4 hours. The same model degradation event — two resolution timelines. The difference is not the people or the technology. It is the integration architecture.</p>
+
+    <div class="ba-grid">
+      <div class="ba-col">
+        <div class="ba-head">❌ Current state — manual coordination</div>
+        <div class="ba-step"><span class="ba-time">T+0</span><span class="ba-text">Alert fires. Compliance analyst notices spike in false positives.</span></div>
+        <div class="ba-step"><span class="ba-time">T+30m</span><span class="ba-text">SI L1 raises ticket. Begins generic troubleshooting — service restart attempted.</span></div>
+        <div class="ba-step"><span class="ba-time">T+2h</span><span class="ba-text">SI L2 determines this is likely a model issue. Contacts AI vendor via email. <strong>JIT access request submitted.</strong></span></div>
+        <div class="ba-step"><span class="ba-time">T+4-6h</span><span class="ba-text">JIT access approved. Vendor engineer logs in. Begins diagnosis with no prior context. SI engineer re-explains everything verbally.</span></div>
+        <div class="ba-step"><span class="ba-time">T+7h</span><span class="ba-text">Root cause identified: schema change in upstream Kafka feed corrupted feature vectors. Fix requires a config change.</span></div>
+        <div class="ba-step"><span class="ba-time">T+8h</span><span class="ba-text">Change request manually created in ServiceNow. Separate summary emailed to vendor. Teams thread updated manually.</span></div>
+        <div class="ba-step"><span class="ba-time">T+10h</span><span class="ba-text">CR approved. Fix deployed. <strong>MTTR: 10 hours.</strong> Audit trail: three disconnected systems.</span></div>
+      </div>
+      <div class="ba-divider"><div class="ba-arrow">→</div></div>
+      <div class="ba-col">
+        <div class="ba-head">✓ Agentic mesh — automated coordination</div>
+        <div class="ba-step"><span class="ba-time">T+0</span><span class="ba-text">Alert fires. <strong>Sentry Agent triggers</strong> — reads HPE telemetry + APM logs simultaneously.</span></div>
+        <div class="ba-step"><span class="ba-time">T+1m</span><span class="ba-text">Sentry produces anonymised Diagnostic Package. <strong>Coordinator pre-stages JIT access request</strong> via PAM API.</span></div>
+        <div class="ba-step"><span class="ba-time">T+4m</span><span class="ba-text"><strong>Specialist Agent</strong> receives Diagnostic Package. Queries AFC typology library + model version history. Identifies schema version mismatch as root cause.</span></div>
+        <div class="ba-step"><span class="ba-time">T+6m</span><span class="ba-text"><strong>Investigator Agent</strong> enriches fix recommendation with environment context. Drafts pre-filled Change Request.</span></div>
+        <div class="ba-step"><span class="ba-time">T+8m</span><span class="ba-text"><strong>Coordinator Agent</strong> simultaneously: routes HITL approval to compliance analyst via Teams; pre-fills ServiceNow CR; sends summary email to vendor. Shared incident ID links all three.</span></div>
+        <div class="ba-step"><span class="ba-time">T+10m</span><span class="ba-text">Analyst reviews AI-drafted CR with full context. JIT access already approved and waiting. Approves in Teams.</span></div>
+        <div class="ba-step"><span class="ba-time">T+13m</span><span class="ba-text">Fix deployed. <strong>MTTR: 13 minutes.</strong> Audit trail: single linked chain. Evaluator Agent monitors 72h post-fix.</span></div>
+      </div>
+    </div>
+
+    <div class="results-grid" style="margin-top:24px">
+      <div class="r-item"><div class="r-n">~95%</div><div class="r-l">MTTR reduction</div><div class="r-s">10h manual → 13min agentic</div></div>
+      <div class="r-item"><div class="r-n">4h → 8m</div><div class="r-l">JIT dead zone</div><div class="r-s">Pre-staged at incident detection</div></div>
+      <div class="r-item"><div class="r-n">1</div><div class="r-l">Audit chain</div><div class="r-s">Linked incident ID across all platforms</div></div>
+      <div class="r-item"><div class="r-n">0</div><div class="r-l">Manual re-entries</div><div class="r-s">CR pre-filled; all platforms updated simultaneously</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SEC 3 — AGENT FLOW -->
+<section class="sec" id="agents">
+  <div class="wrap">
+    <div class="sec-ey">03 — The architecture</div>
+    <h2 class="sec-title">How the agentic mesh works — step by step</h2>
+    <p class="sec-intro">Four specialised agents, each scoped to one party's boundary, coordinated by a LangGraph orchestrator. No single agent crosses a security perimeter — context travels as anonymised, typed packages via an MCP gateway with OPA-enforced permissions.</p>
+
+    <div class="flow-wrap">
+      <div class="flow-header">
+        <span>Agent execution sequence — incident to resolution</span>
+        <span style="color:var(--green)">Phase 1 · low trust &nbsp;&nbsp; Phase 2 · full mesh</span>
+      </div>
+
+      <div class="flow-step">
+        <div class="fs-time">T+0</div>
+        <div class="fs-body">
+          <div class="fs-agent" style="color:#6A8FD4">Sentry Agent — deployed inside FI boundary only</div>
+          <div class="fs-title">Diagnostic Sentry fires on metric anomaly</div>
+          <div class="fs-desc">Reads HPE iLO hardware telemetry (GPU memory, CPU load) + AppDynamics application logs (alert volume, inference latency, Kafka consumer lag). Applies PII scrubber via Presidio. Produces anonymised Diagnostic Package — typed Pydantic schema. Zero data leaves the FI boundary at this step. Simultaneously submits JIT pre-staging request to PAM API.</div>
+        </div>
+        <div class="fs-owner"><span class="owner-tag fi">FI boundary</span></div>
+      </div>
+
+      <div class="flow-step">
+        <div class="fs-time">T+4m</div>
+        <div class="fs-body">
+          <div class="fs-agent" style="color:#3A9970">Specialist Agent — deployed in vendor environment</div>
+          <div class="fs-title">FinCrime Specialist receives package, queries knowledge base</div>
+          <div class="fs-desc">Receives anonymised Diagnostic Package via MCP Gateway (authenticated via OAuth 2.0, OPA policy verified). Queries vendor typology library (semantic search over AFC Ecosystem), model version registry (MLflow), and historical fix database (PostgreSQL). Returns structured FixRecommendation: {root_cause, confidence_score, evidence_citations[], affected_model_version, recommended_config_change}.</div>
+        </div>
+        <div class="fs-owner"><span class="owner-tag vendor">Vendor boundary</span></div>
+      </div>
+
+      <div class="flow-step">
+        <div class="fs-time">T+6m</div>
+        <div class="fs-body">
+          <div class="fs-agent" style="color:#C08040">Investigator Agent — deployed in SI environment</div>
+          <div class="fs-title">SI Investigator enriches recommendation with environment context</div>
+          <div class="fs-desc">Receives FixRecommendation from Specialist. Queries FI environment context: current deployed model version, last config change timestamp, current alert backlog volume, change freeze status. Validates fix is applicable to current deployment state. Drafts pre-filled ServiceNow Change Request — all required fields populated, risk level calculated, rollback plan included. Outputs draft CR with HITL approval request.</div>
+        </div>
+        <div class="fs-owner"><span class="owner-tag si">SI boundary</span></div>
+      </div>
+
+      <div class="flow-step">
+        <div class="fs-time">T+8m</div>
+        <div class="fs-body">
+          <div class="fs-agent" style="color:var(--green)">Coordinator Agent — integration layer</div>
+          <div class="fs-title">Cross-platform coordinator fans out simultaneously</div>
+          <div class="fs-desc">Assembles final package. Simultaneously executes three actions: (1) Posts Adaptive Card to compliance analyst's MS Teams channel — incident summary, recommended fix, risk assessment, rollback plan, approve/reject buttons that generate signed HITL tokens. (2) Links pre-filled CR in ServiceNow with shared incident_id. (3) Sends structured summary email to vendor contact. Writes all actions to audit ledger with shared incident_id linking every platform entry.</div>
+        </div>
+        <div class="fs-owner"><span class="owner-tag shared">Shared · HITL gate</span></div>
+      </div>
+
+      <div class="flow-step">
+        <div class="fs-time">T+10m</div>
+        <div class="fs-body">
+          <div class="fs-agent" style="color:#6A8FD4">Human analyst — FI compliance team</div>
+          <div class="fs-title">Analyst reviews and approves in Teams</div>
+          <div class="fs-desc">Compliance analyst receives AI-drafted Adaptive Card. Reviews: root cause, evidence citations (specific typology IDs and model version), proposed fix, risk assessment, rollback plan. JIT access already pre-approved and waiting. Clicks Approve — generates signed HITL token consumed by Coordinator Agent to authorise CR creation. Entire review context visible in Teams — analyst does not need to open separate systems.</div>
+        </div>
+        <div class="fs-owner"><span class="owner-tag fi">HITL · FI</span></div>
+      </div>
+
+      <div class="flow-step" style="border-bottom:none">
+        <div class="fs-time">T+13m+</div>
+        <div class="fs-body">
+          <div class="fs-agent" style="color:var(--green)">Evaluator Agent — post-fix monitoring</div>
+          <div class="fs-title">Fix deployed. Evaluator Agent monitors for 72 hours</div>
+          <div class="fs-desc">Fix deployed via approved CR. Evaluator Agent monitors: aml_fp_rate_rolling_24h, model_inference_p99_latency, alert_volume_1h, analyst_feedback_rate. Compares against pre-incident baseline. At 72 hours: generates automated "Incident Closed" report with before/after metrics. Writes to audit ledger. If metrics don't recover within SLA, triggers re-escalation to HITL.</div>
+        </div>
+        <div class="fs-owner"><span class="owner-tag shared">Shared</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEC 4 — WHAT MAKES IT WORK -->
+<section class="sec" id="design">
+  <div class="wrap">
+    <div class="sec-ey">04 — Design principles</div>
+    <h2 class="sec-title">What makes the architecture work — and what kills it</h2>
+
+    <div class="lesson-list">
+      <div class="lesson">
+        <div class="lesson-n">01</div>
+        <div>
+          <div class="lesson-title">Agents stay inside their owner's boundary — always</div>
+          <div class="lesson-desc">The Sentry Agent never leaves the FI's perimeter. The Specialist Agent never touches raw FI data. Context crosses boundaries only as anonymised, schema-typed packages via the MCP Gateway. This is not a security preference — it is the MAS data residency compliance requirement. Any architecture that gives a vendor agent direct access to production logs fails this test, regardless of contractual protections.</div>
+        </div>
+      </div>
+      <div class="lesson">
+        <div class="lesson-n">02</div>
+        <div>
+          <div class="lesson-title">Permissions at infrastructure level — not in agent code</div>
+          <div class="lesson-desc">OPA (Open Policy Agent) enforces tool access at the MCP Gateway layer. Even if an agent's code is changed, OPA blocks any tool call not in the declared allow-list. Sentry Agent can call hpe_telemetry_read and apm_logs_read — nothing else. Coordinator Agent can call teams_message and servicenow_cr_link — nothing else. This is how you satisfy the MGF Dimension 1 requirement for bounded agent access.</div>
+        </div>
+      </div>
+      <div class="lesson">
+        <div class="lesson-n">03</div>
+        <div>
+          <div class="lesson-title">The shared incident ID is the most important single design decision</div>
+          <div class="lesson-desc">One UUID, generated at incident detection, written to every platform action — Teams message, ServiceNow CR, vendor email, audit SIEM entry. This single ID is what makes an examiner's timeline reconstruction possible. Without it, the audit trail is three disconnected systems. With it, every action is linked into one queryable chain. This is the difference between a finding and a clean audit.</div>
+        </div>
+      </div>
+      <div class="lesson">
+        <div class="lesson-n">04</div>
+        <div>
+          <div class="lesson-title">Start with Phase 1 only — the Sentry Agent</div>
+          <div class="lesson-desc">The Diagnostic Sentry requires zero cross-boundary connectivity, zero vendor contractual changes, and zero modifications to MAS JIT policy. It is purely an internal FI observability improvement. It builds the evidence base — MTTR data, diagnostic quality, agent trace logs — that justifies the Phase 2 investment. Organisations that try to deploy the full four-agent mesh on day one consistently fail at vendor coordination and data classification disputes. Start with what you can control entirely.</div>
+        </div>
+      </div>
+      <div class="lesson">
+        <div class="lesson-n">05</div>
+        <div>
+          <div class="lesson-title">The HITL gate must be substantive, not a rubber stamp</div>
+          <div class="lesson-desc">The Adaptive Card design matters as much as the approval mechanism. Analysts need: the root cause, the evidence (typology ID, model version, source citation), the proposed fix, the risk assessment, and the rollback plan — in the approval request itself. If analysts must open a separate system to review, they won't. The 91% of compliance leaders comfortable compromising explainability for automation are not bad actors — they are overworked humans given inadequate review tooling. Fix the tooling.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-green" style="margin-top:8px">
+      <div class="callout-label">The deployment reality</div>
+      <p>The most common reason this architecture fails in production is not technical — it is organisational. <strong>Four organisations must agree on a shared incident ID standard, a data classification schema for Diagnostic Packages, and an MCP Gateway governance model before the first agent is deployed.</strong> The technology is straightforward. The multi-party agreement is hard. Budget more time for the governance conversations than for the engineering.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SEC 5 — WHEN TO USE THIS PATTERN -->
+<section class="sec" id="applicability" style="border-bottom:none">
+  <div class="wrap">
+    <div class="sec-ey">05 — Applicability</div>
+    <h2 class="sec-title">When this pattern applies — and when it doesn't</h2>
+    <p class="sec-intro">The multi-party agentic mesh is not the right answer for every AI support scenario. It adds coordination overhead that is only justified when the structural frictions described in Section 1 are all present.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:28px">
+      <div style="background:var(--bg2);padding:24px">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:14px;border-bottom:1px solid var(--rule);padding-bottom:10px">Use this pattern when</div>
+        <div style="font-size:13px;color:var(--text2);font-weight:300;line-height:1.7;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;gap:8px"><span style="color:var(--green);flex-shrink:0">✓</span>AI stack is owned by 3+ separate organisations</div>
+          <div style="display:flex;gap:8px"><span style="color:var(--green);flex-shrink:0">✓</span>Data residency or security boundaries prevent shared access</div>
+          <div style="display:flex;gap:8px"><span style="color:var(--green);flex-shrink:0">✓</span>Incidents require vendor expertise not accessible to SI frontline</div>
+          <div style="display:flex;gap:8px"><span style="color:var(--green);flex-shrink:0">✓</span>Regulatory audit trail must span multiple platforms</div>
+          <div style="display:flex;gap:8px"><span style="color:var(--green);flex-shrink:0">✓</span>MTTR is material to regulatory compliance or commercial SLAs</div>
+          <div style="display:flex;gap:8px"><span style="color:var(--green);flex-shrink:0">✓</span>JIT access dead zone is a documented problem</div>
+        </div>
+      </div>
+      <div style="background:var(--bg2);padding:24px">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--red);margin-bottom:14px;border-bottom:1px solid var(--rule);padding-bottom:10px">Do not use when</div>
+        <div style="font-size:13px;color:var(--text2);font-weight:300;line-height:1.7;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;gap:8px"><span style="color:var(--red);flex-shrink:0">✗</span>All AI components are managed by a single internal team</div>
+          <div style="display:flex;gap:8px"><span style="color:var(--red);flex-shrink:0">✗</span>No cross-boundary data classification agreement is possible</div>
+          <div style="display:flex;gap:8px"><span style="color:var(--red);flex-shrink:0">✗</span>Vendor does not have an API-accessible knowledge base</div>
+          <div style="display:flex;gap:8px"><span style="color:var(--red);flex-shrink:0">✗</span>Incident types are simple and well-documented in existing runbooks</div>
+          <div style="display:flex;gap:8px"><span style="color:var(--red);flex-shrink:0">✗</span>Organisation lacks the engineering capacity to operate LangGraph + MCP in production</div>
+          <div style="display:flex;gap:8px"><span style="color:var(--red);flex-shrink:0">✗</span>Phase 1 (Sentry Agent) has not been validated first</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-green" style="margin-top:28px">
+      <div class="callout-label">Continue the conversation</div>
+      <p>Operating a multi-party AI support ecosystem? Encountered a failure mode not covered here? The structural frictions described in this case study are observable across financial institutions, healthcare, critical infrastructure — anywhere regulated AI sits at the intersection of multiple organisations. <strong><a href="https://www.linkedin.com/in/pardhusg/" target="_blank" style="color:var(--green)">Connect on LinkedIn</a></strong> to compare notes.</p>
+    </div>
+  </div>
+</section>
+
+<footer style="border-top:1px solid rgba(255,255,255,.08);padding:24px 0;background:#141414">
+  <div style="max-width:1160px;margin:0 auto;padding:0 56px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+    <a href="index.html" style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:#fff;text-decoration:none">The <span style="color:#00A651">Deployment</span> Gap</a>
+    <p style="font-family:'DM Mono',monospace;font-size:10px;color:#686864;letter-spacing:.06em">Pardhu V &nbsp;&middot;&nbsp; <a href="https://www.linkedin.com/in/pardhusg/" target="_blank" style="color:#00A651;text-decoration:none">linkedin.com/in/pardhusg</a> &nbsp;&middot;&nbsp; Singapore &nbsp;&middot;&nbsp; 2026</p>
+  </div>
+</footer>
+
+<script>
+const io=new IntersectionObserver(e=>{e.forEach(en=>{if(en.isIntersecting)en.target.style.animationPlayState='running'})},{threshold:.06});
+document.querySelectorAll('.fu').forEach(el=>{el.style.animationPlayState='paused';io.observe(el)});
+</script>
+</body>
+</html>
