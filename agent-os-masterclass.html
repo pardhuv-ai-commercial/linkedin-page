@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenFang, OpenClaw, NemoClaw & the Rise of the Agent OS — 3-Hour Masterclass</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg:       #0a0c10;
+    --surface:  #111318;
+    --surface2: #181c24;
+    --border:   #252a36;
+    --accent1:  #e8ff70;   /* electric lime */
+    --accent2:  #5bffd8;   /* cyan-mint */
+    --accent3:  #ff6b6b;   /* coral-red */
+    --accent4:  #c084fc;   /* soft purple */
+    --text:     #d8dce8;
+    --muted:    #6b7280;
+    --heading:  #f0f2f8;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 17px;
+    line-height: 1.75;
+    font-weight: 300;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+  }
+
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  /* ── HERO ── */
+  header {
+    background: linear-gradient(160deg, #0d111a 0%, #0a0c10 60%);
+    border-bottom: 1px solid var(--border);
+    padding: 80px 0 64px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(232,255,112,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .tag-pill {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: rgba(232,255,112,0.12);
+    color: var(--accent1);
+    border: 1px solid rgba(232,255,112,0.3);
+    padding: 4px 14px;
+    border-radius: 100px;
+    margin-bottom: 28px;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    line-height: 1.15;
+    color: var(--heading);
+    margin-bottom: 20px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent1);
+  }
+
+  .subtitle {
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 640px;
+    margin-bottom: 40px;
+    font-weight: 300;
+  }
+
+  .meta-row {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .meta-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .meta-value {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--heading);
+  }
+
+  /* ── PROGRESS NAV ── */
+  nav.toc {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  nav.toc ul {
+    display: flex;
+    gap: 0;
+    list-style: none;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  nav.toc ul::-webkit-scrollbar { display: none; }
+
+  nav.toc a {
+    display: block;
+    padding: 14px 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  nav.toc a:hover {
+    color: var(--accent1);
+    border-bottom-color: var(--accent1);
+  }
+
+  /* ── GENERAL TYPOGRAPHY ── */
+  main { padding: 72px 0 80px; }
+
+  section { margin-bottom: 80px; }
+
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    color: var(--heading);
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  h2 .section-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent1);
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--heading);
+    margin: 36px 0 12px;
+    letter-spacing: 0.01em;
+  }
+
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--accent2);
+    margin: 28px 0 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+
+  p { margin-bottom: 18px; }
+
+  p + p { margin-top: 0; }
+
+  a { color: var(--accent2); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  strong { color: var(--heading); font-weight: 600; }
+
+  code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85em;
+    background: rgba(91,255,216,0.08);
+    color: var(--accent2);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 56px 0;
+  }
+
+  /* ── MODULE CARDS ── */
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    margin: 36px 0;
+  }
+
+  .module-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .module-card:hover { border-color: var(--accent1); }
+
+  .module-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .module-card.m1::before { background: var(--accent1); }
+  .module-card.m2::before { background: var(--accent2); }
+  .module-card.m3::before { background: var(--accent4); }
+
+  .module-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .module-card h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    margin: 0 0 6px;
+    color: var(--heading);
+  }
+
+  .module-time {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .module-desc { font-size: 0.9rem; color: var(--muted); margin-bottom: 16px; }
+
+  .module-card ul {
+    list-style: none;
+    padding: 0;
+    font-size: 0.88rem;
+  }
+
+  .module-card ul li {
+    padding: 4px 0;
+    padding-left: 16px;
+    position: relative;
+    color: var(--text);
+  }
+
+  .module-card ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent1);
+    font-size: 0.75rem;
+  }
+
+  /* ── CALLOUT BOXES ── */
+  .callout {
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 28px 0;
+    border-left: 3px solid;
+    font-size: 0.95rem;
+  }
+
+  .callout.key {
+    background: rgba(232,255,112,0.05);
+    border-color: var(--accent1);
+  }
+
+  .callout.warn {
+    background: rgba(255,107,107,0.05);
+    border-color: var(--accent3);
+  }
+
+  .callout.info {
+    background: rgba(91,255,216,0.05);
+    border-color: var(--accent2);
+  }
+
+  .callout.purple {
+    background: rgba(192,132,252,0.06);
+    border-color: var(--accent4);
+  }
+
+  .callout-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .callout.key .callout-title { color: var(--accent1); }
+  .callout.warn .callout-title { color: var(--accent3); }
+  .callout.info .callout-title { color: var(--accent2); }
+  .callout.purple .callout-title { color: var(--accent4); }
+
+  /* ── TABLES ── */
+  .table-wrap { overflow-x: auto; margin: 28px 0; border-radius: 12px; border: 1px solid var(--border); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    background: var(--surface);
+  }
+
+  thead tr { background: var(--surface2); }
+
+  th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 13px 16px;
+    border-bottom: 1px solid rgba(37,42,54,0.5);
+    vertical-align: top;
+    line-height: 1.55;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  tr:hover td { background: rgba(255,255,255,0.015); }
+
+  td.term {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--accent2);
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  td.green { color: #4ade80; }
+  td.yellow { color: #fbbf24; }
+  td.red { color: var(--accent3); }
+
+  .badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-green { background: rgba(74,222,128,0.12); color: #4ade80; }
+  .badge-yellow { background: rgba(251,191,36,0.12); color: #fbbf24; }
+  .badge-red { background: rgba(255,107,107,0.12); color: var(--accent3); }
+  .badge-blue { background: rgba(91,255,216,0.12); color: var(--accent2); }
+
+  /* ── DIAGRAM ── */
+  .diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin: 32px 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.9;
+    color: var(--text);
+    overflow-x: auto;
+  }
+
+  .diagram .box-oc { color: var(--accent1); }
+  .diagram .box-nc { color: var(--accent3); }
+  .diagram .box-of { color: var(--accent2); }
+
+  /* ── DECISION TREE ── */
+  .decision-tree {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin: 32px 0;
+  }
+
+  .dt-node {
+    padding: 14px 20px;
+    border-radius: 10px;
+    margin: 10px 0;
+    font-size: 0.93rem;
+  }
+
+  .dt-q {
+    background: rgba(232,255,112,0.07);
+    border-left: 3px solid var(--accent1);
+    color: var(--heading);
+    font-weight: 500;
+  }
+
+  .dt-a {
+    background: rgba(91,255,216,0.06);
+    border-left: 3px solid var(--accent2);
+    margin-left: 32px;
+  }
+
+  .dt-result {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    padding: 3px 12px;
+    border-radius: 6px;
+    margin-left: 8px;
+    font-weight: 600;
+  }
+
+  .dt-oc { background: rgba(232,255,112,0.15); color: var(--accent1); }
+  .dt-nc { background: rgba(255,107,107,0.15); color: var(--accent3); }
+  .dt-of { background: rgba(91,255,216,0.15); color: var(--accent2); }
+
+  /* ── EXERCISE BLOCKS ── */
+  .exercise {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin: 24px 0;
+    position: relative;
+  }
+
+  .exercise-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent4);
+    margin-bottom: 10px;
+  }
+
+  .exercise h4 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    color: var(--heading);
+    font-weight: 600;
+    margin: 0 0 12px;
+    letter-spacing: 0;
+  }
+
+  .exercise p { font-size: 0.93rem; margin-bottom: 12px; }
+
+  .exercise ul, .exercise ol {
+    margin-left: 20px;
+    font-size: 0.9rem;
+  }
+
+  .exercise li { margin-bottom: 6px; }
+
+  /* ── STACK DIAGRAM ── */
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 28px 0;
+  }
+
+  .stack-layer {
+    border-radius: 10px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 0.9rem;
+  }
+
+  .stack-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    width: 80px;
+    flex-shrink: 0;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .sl-compute { background: rgba(232,255,112,0.06); border: 1px solid rgba(232,255,112,0.15); }
+  .sl-agent   { background: rgba(91,255,216,0.06);  border: 1px solid rgba(91,255,216,0.15); }
+  .sl-security{ background: rgba(255,107,107,0.06); border: 1px solid rgba(255,107,107,0.15); }
+  .sl-obs     { background: rgba(192,132,252,0.06); border: 1px solid rgba(192,132,252,0.15); }
+  .sl-llm     { background: rgba(251,191,36,0.06);  border: 1px solid rgba(251,191,36,0.15); }
+
+  /* ── RISK CHECKLIST ── */
+  .checklist {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 20px 0;
+  }
+
+  @media(max-width: 600px) { .checklist { grid-template-columns: 1fr; } }
+
+  .check-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 0.88rem;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .check-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ── GAP SECTION ── */
+  .gap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .gap-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+  }
+
+  .gap-card h4 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.88rem;
+    color: var(--heading);
+    font-weight: 600;
+    letter-spacing: 0;
+    margin: 0 0 8px;
+  }
+
+  .gap-card p { font-size: 0.82rem; color: var(--muted); margin: 0; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 48px 0 40px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  footer h4 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 12px;
+  }
+
+  footer a { color: var(--accent2); }
+
+  /* ── UTILITIES ── */
+  .accent1 { color: var(--accent1); }
+  .accent2 { color: var(--accent2); }
+  .accent3 { color: var(--accent3); }
+  .accent4 { color: var(--accent4); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media(max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+  .full-border {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    background: var(--surface);
+    margin: 28px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<header>
+  <div class="wrap">
+    <div class="tag-pill">3-Hour Technical Masterclass</div>
+    <h1>OpenFang, OpenClaw, NemoClaw<br>&amp; the Rise of the <em>Agent OS</em></h1>
+    <p class="subtitle">A rigorous, jargon-free course on the new generation of open-source autonomous agent runtimes — what they are, how they differ, and how to evaluate them for real production work.</p>
+    <div class="meta-row">
+      <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">3 hours</span></div>
+      <div class="meta-item"><span class="meta-label">Modules</span><span class="meta-value">3 core + supplements</span></div>
+      <div class="meta-item"><span class="meta-label">Audience</span><span class="meta-value">Developers · Architects · Technical PMs</span></div>
+      <div class="meta-item"><span class="meta-label">Level</span><span class="meta-value">General tech literacy assumed</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════ NAV ═══════════════ -->
+<nav class="toc">
+  <div class="wrap">
+    <ul>
+      <li><a href="#intro">Introduction</a></li>
+      <li><a href="#modules">Module Overview</a></li>
+      <li><a href="#terminology">Terminology</a></li>
+      <li><a href="#mod1">Module 1</a></li>
+      <li><a href="#mod2">Module 2</a></li>
+      <li><a href="#mod3">Module 3</a></li>
+      <li><a href="#supplements">Deep Dives</a></li>
+      <li><a href="#exercises">Exercises</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main>
+<div class="wrap">
+
+<!-- ═══ INTRO ═══ -->
+<section id="intro">
+  <h2><span class="section-num">00 // Introduction</span>What is this course?</h2>
+
+  <p>This masterclass teaches you how to think clearly about a fast-moving corner of AI infrastructure: <strong>autonomous agent runtimes</strong>. Specifically, it uses three open-source projects — <strong>OpenClaw</strong>, <strong>NemoClaw</strong>, and <strong>OpenFang</strong> — as a lens for understanding a much bigger architectural question: what does it actually mean to run an AI agent in production?</p>
+
+  <p>The three projects are not interchangeable. They represent three fundamentally different philosophies about where capabilities should live, who is responsible for security, and how much control a system should have over itself. Understanding those philosophies will make you a far more credible participant in technical, product, and architecture conversations about AI systems.</p>
+
+  <h3>Who this course is for</h3>
+  <p>This course assumes you are comfortable with general technology concepts — you know what an API is, you have a rough idea what a database does, and you have heard of large language models. You do <em>not</em> need to be an AI researcher, an ML engineer, or a Rust programmer. Every piece of domain jargon will be defined before it is used.</p>
+
+  <div class="callout info">
+    <div class="callout-title">What you'll be able to do by the end</div>
+    <p>Explain the difference between an agent framework, a security wrapper, and an Agent OS. Evaluate real projects against a structured rubric. Hold your own in architecture or product discussions about autonomous AI systems. Identify the risks you'd face in each approach — and the gaps none of them currently solve.</p>
+  </div>
+
+  <h3>Why this topic matters now</h3>
+  <p>AI assistants that just answer questions are already table stakes. The next wave is agents that <em>act</em>: agents that browse the web, send emails, run code, make API calls, and wake themselves up on a schedule to do all of this without being asked. That shift from "respond when prompted" to "do things autonomously" creates new categories of infrastructure concern — security, observability, cost governance, audit trails — that most current tools were not designed for. This course maps that landscape.</p>
+</section>
+
+<!-- ═══ MODULE OVERVIEW ═══ -->
+<section id="modules">
+  <h2><span class="section-num">01 // Course Structure</span>Module Overview</h2>
+  <p>The course is divided into three 60-minute modules. Each module builds on the last. Do not skip Module 1 even if you feel comfortable with the vocabulary — the conceptual framing established there is load-bearing for everything else.</p>
+
+  <div class="module-grid">
+    <div class="module-card m1">
+      <div class="module-num">Module 01</div>
+      <h3>Foundations &amp; Vocabulary</h3>
+      <div class="module-time">⏱ 0:00 – 1:00</div>
+      <p class="module-desc">Build the mental models and vocabulary needed to reason about agents, runtimes, and the categories of architecture being compared.</p>
+      <ul>
+        <li>Define "agent" beyond the buzzword</li>
+        <li>Distinguish reactive vs proactive agents</li>
+        <li>Understand framework vs wrapper vs OS</li>
+        <li>Map the three projects to those categories</li>
+        <li>Learn why messaging-first matters</li>
+        <li>Understand what a "skill" or "tool" really is</li>
+      </ul>
+    </div>
+    <div class="module-card m2">
+      <div class="module-num">Module 02</div>
+      <h3>System Anatomy &amp; Comparative Architecture</h3>
+      <div class="module-time">⏱ 1:00 – 2:00</div>
+      <p class="module-desc">Go inside each system: how it handles memory, tools, scheduling, model routing, and multi-agent coordination.</p>
+      <ul>
+        <li>Understand memory and RAG tradeoffs</li>
+        <li>Compare tool ecosystems at scale</li>
+        <li>Explain MCP and A2A protocols</li>
+        <li>Understand scheduling and proactive agents</li>
+        <li>Compare API layers and cost routing</li>
+        <li>Situate LangGraph, CrewAI, AutoGen</li>
+      </ul>
+    </div>
+    <div class="module-card m3">
+      <div class="module-num">Module 03</div>
+      <h3>Security, Tradeoffs &amp; Production Decisions</h3>
+      <div class="module-time">⏱ 2:00 – 3:00</div>
+      <p class="module-desc">The security architectures of all three, honest tradeoff analysis, shared gaps, and how to make real decisions.</p>
+      <ul>
+        <li>Compare three security philosophies</li>
+        <li>Understand RBAC, sandboxing, audit trails</li>
+        <li>Recognise plugin supply-chain risks</li>
+        <li>Identify gaps shared by all three</li>
+        <li>Apply a decision framework to scenarios</li>
+        <li>Evaluate claims in vendor materials critically</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TERMINOLOGY ═══ -->
+<section id="terminology">
+  <h2><span class="section-num">02 // Reference</span>Terminology Guide</h2>
+  <p>Before beginning Module 1, scan this reference table. You do not need to memorise every term now. Return here whenever the course uses a word you are uncertain about. Terms are grouped by conceptual area.</p>
+
+  <h3>Core Agent Concepts</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Term</th><th>Plain-language definition</th><th>Why it matters here</th></tr></thead>
+      <tbody>
+        <tr><td class="term">Agent</td><td>A software program that perceives its environment (messages, files, APIs) and takes actions toward a goal, rather than just returning a response to a question.</td><td>All three projects are agent runtimes. "Agent" is not just a synonym for "AI chat."</td></tr>
+        <tr><td class="term">Reactive agent</td><td>An agent that acts only when a user or system prompts it. Think of a customer-service bot — it waits for input.</td><td>OpenClaw is primarily reactive. You talk to it; it answers.</td></tr>
+        <tr><td class="term">Proactive agent</td><td>An agent that initiates actions on its own — waking up on a timer, monitoring a feed, or triggering a workflow without a human trigger.</td><td>OpenFang's Hands are proactive. They run on schedules even when no user is present.</td></tr>
+        <tr><td class="term">Runtime</td><td>The software environment that executes an agent's code — loading models, managing state, handling I/O. Analogous to Node.js for JavaScript.</td><td>Each project provides a different runtime with different characteristics.</td></tr>
+        <tr><td class="term">Skill</td><td>A discrete, callable capability a user or developer adds to an agent (e.g., "search the web," "send an email"). In OpenClaw, skills are installable plugins.</td><td>OpenClaw has 13,700+ community skills on ClawHub. OpenFang ships 53 built-in.</td></tr>
+        <tr><td class="term">Tool calling</td><td>The mechanism by which an LLM decides to invoke an external function (a tool) rather than generating text. The model outputs a structured request; the runtime executes it.</td><td>Tool calling is how agents actually do things rather than just talk about doing them.</td></tr>
+        <tr><td class="term">Hand</td><td>OpenFang's term for a pre-built autonomous agent specialised for a domain (e.g., lead generation, OSINT, content creation). Runs on a schedule.</td><td>Hands are one of OpenFang's key differentiators — they're proactive, not prompt-driven.</td></tr>
+        <tr><td class="term">Orchestration</td><td>The process of coordinating multiple agents, tools, or steps to complete a complex task. An orchestrator decides what runs next.</td><td>Orchestration is what makes agents useful for multi-step problems rather than single queries.</td></tr>
+        <tr><td class="term">Workflow</td><td>A defined sequence of steps an agent follows. Can be linear (step 1, step 2, step 3) or graph-like (branching, looping).</td><td>All three projects support workflows; they differ in how those workflows are defined and triggered.</td></tr>
+        <tr><td class="term">Scheduling</td><td>The ability to trigger an agent at a set time or interval (cron-style) rather than waiting for a user message.</td><td>OpenClaw has a Proactive Engine; OpenFang uses schedule-driven Hands; NemoClaw has no scheduler.</td></tr>
+        <tr><td class="term">Messaging channels</td><td>The platforms through which a user can interact with an agent (Slack, Telegram, Discord, Teams, WhatsApp, etc.).</td><td>OpenClaw supports 25+ channels; OpenFang supports 40; NemoClaw supports 3.</td></tr>
+        <tr><td class="term">Local-first architecture</td><td>A design where data and computation stay on the user's own machine rather than a cloud server. Prioritises privacy and offline capability.</td><td>All three projects are local-first by default — they run on your own hardware, not a cloud service.</td></tr>
+        <tr><td class="term">Single binary</td><td>A deployment where the entire application is one executable file, with no external dependencies to install. Simplifies setup and distribution.</td><td>OpenFang ships as a single Rust binary. This is a significant operational advantage for deployment.</td></tr>
+        <tr><td class="term">Cold start</td><td>The time it takes for an application to become ready after being launched from a stopped state.</td><td>OpenFang: 180ms cold start. A fast cold start matters for serverless or on-demand deployments.</td></tr>
+        <tr><td class="term">Idle memory footprint</td><td>The RAM an application consumes while running but not actively processing anything.</td><td>OpenFang: ~40MB idle. Lower footprint means you can run more agents on the same hardware.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Architecture &amp; Infrastructure</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Term</th><th>Plain-language definition</th><th>Why it matters here</th></tr></thead>
+      <tbody>
+        <tr><td class="term">Agent framework</td><td>A library or toolkit that gives developers primitives to build agents (state management, tool calling, memory). The developer assembles the pieces.</td><td>OpenClaw is primarily a framework — it gives you capabilities, but you wire them up.</td></tr>
+        <tr><td class="term">Agent OS</td><td>A runtime that goes further than a framework by building in scheduling, memory, security, multi-agent routing, and cost controls as first-class kernel-level primitives — like an operating system rather than a library.</td><td>This is OpenFang's claim — and the key architectural distinction being taught in this course.</td></tr>
+        <tr><td class="term">MCP</td><td>Model Context Protocol — an open standard (from Anthropic) that defines how external tools and data sources plug into an LLM system in a standardised way.</td><td>OpenClaw supports 500+ MCP tools via MCPorter. OpenFang supports MCP in both client and server mode.</td></tr>
+        <tr><td class="term">A2A</td><td>Agent-to-Agent protocol — a standard (from Google) that defines how separate AI agents communicate and delegate tasks to each other.</td><td>OpenFang has A2A support + its own OFP peer-to-peer protocol. OpenClaw has it on the roadmap.</td></tr>
+        <tr><td class="term">API layer</td><td>A set of programmatic endpoints that expose system functionality to other software. OpenFang has an OpenAI-compatible API with 140+ endpoints.</td><td>A rich API layer makes it easier to integrate the agent into larger systems or build custom UIs.</td></tr>
+        <tr><td class="term">Provider routing</td><td>Logic that decides which LLM provider (OpenAI, Anthropic, Mistral, local Ollama, etc.) should handle a given request.</td><td>All three projects are model-agnostic — they route to external providers rather than hosting models.</td></tr>
+        <tr><td class="term">Cost-aware routing</td><td>Provider routing that also considers the per-token cost of each model, steering requests to cheaper models when the task does not need a frontier model.</td><td>Only OpenFang has built-in per-agent budget tracking and cost-aware routing.</td></tr>
+        <tr><td class="term">Durable execution</td><td>Execution that survives failures — if an agent crashes mid-task, it can resume from where it stopped rather than starting over.</td><td>None of the three projects offer true durable execution. This is a shared gap, typically filled by tools like Temporal.</td></tr>
+        <tr><td class="term">Horizontal scaling</td><td>Adding more instances of a system to handle more load, rather than making one instance bigger. Requires the system to be stateless or to share state across instances.</td><td>All three projects are single-instance. None support multi-node or multi-tenant scaling out of the box.</td></tr>
+        <tr><td class="term">Open-weight model</td><td>An AI model whose weights (the learned parameters) are publicly released, allowing local deployment (e.g., Llama, Mistral, Gemma).</td><td>All three projects support open-weight models via Ollama or vLLM. This enables fully local, private operation.</td></tr>
+        <tr><td class="term">Frontier model</td><td>A cutting-edge, typically proprietary model at the leading edge of capability (GPT-4o, Claude Opus, Gemini Ultra). Usually API-only.</td><td>All three projects route to frontier models. None host them directly.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Memory &amp; Knowledge</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Term</th><th>Plain-language definition</th><th>Why it matters here</th></tr></thead>
+      <tbody>
+        <tr><td class="term">Memory</td><td>Any mechanism that allows an agent to retain information across conversations or sessions. Can be short-term (within a session) or long-term (persisted to disk).</td><td>OpenClaw and OpenFang both invest heavily in memory. NemoClaw defers entirely to OpenClaw's memory system.</td></tr>
+        <tr><td class="term">RAG</td><td>Retrieval-Augmented Generation — the practice of searching a local knowledge base and injecting relevant chunks into the LLM's prompt, rather than relying solely on the model's training data.</td><td>OpenClaw has a full local RAG pipeline (auto-chunking, embedding, indexing, retrieval). OpenFang retrieves but lacks dedicated chunking/indexing.</td></tr>
+        <tr><td class="term">Vector search</td><td>A way of finding similar content by comparing mathematical representations (vectors/embeddings) of meaning, rather than matching keywords.</td><td>Both OpenClaw and OpenFang use vector search for memory retrieval.</td></tr>
+        <tr><td class="term">Hybrid search</td><td>Combining vector search (semantic similarity) with keyword search (BM25/full-text) to get the benefits of both. More accurate than either alone.</td><td>OpenClaw's memorySearch uses hybrid search (sqlite-vec + FTS5 BM25). OpenFang uses vector-only — a notable difference.</td></tr>
+        <tr><td class="term">Knowledge graph</td><td>A way of storing information as a network of entities and relationships (e.g., "Company A acquired Company B in 2023") rather than as raw text.</td><td>OpenClaw has community graph-memory plugins. OpenFang's Collector Hand can build knowledge graphs from OSINT sources.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Security &amp; Governance</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Term</th><th>Plain-language definition</th><th>Why it matters here</th></tr></thead>
+      <tbody>
+        <tr><td class="term">RBAC</td><td>Role-Based Access Control — a system where different users or agents are assigned roles, and each role has defined permissions. A "viewer" can read; an "editor" can write; an "admin" can delete.</td><td>Only OpenFang has kernel-level RBAC with per-agent capability gates. OpenClaw has no built-in RBAC.</td></tr>
+        <tr><td class="term">Capability gate</td><td>A per-agent permission check that determines which tools or system resources an agent is allowed to access, enforced at the runtime level.</td><td>OpenFang's capability gates are its primary RBAC mechanism — they're enforced in Rust, not in application code.</td></tr>
+        <tr><td class="term">Least privilege</td><td>A security principle where a process or agent is given only the minimum permissions needed for its task — nothing more.</td><td>OpenFang's default posture. OpenClaw's default is the opposite: open access.</td></tr>
+        <tr><td class="term">WASM sandbox</td><td>WebAssembly (WASM) is a low-level instruction format. A WASM sandbox runs untrusted code in an isolated environment where it cannot access the host system.</td><td>OpenFang uses WASM sandboxes to isolate tool execution — a malicious or buggy tool cannot escape to the host.</td></tr>
+        <tr><td class="term">Sandbox</td><td>Any isolation mechanism that confines a process to a restricted environment. NemoClaw uses Linux kernel sandboxes (Landlock, seccomp, cap-drop=ALL).</td><td>NemoClaw's sandbox is the core of its security story — it wraps OpenClaw in a hardened container.</td></tr>
+        <tr><td class="term">Merkle audit trail</td><td>An audit log where each entry is cryptographically linked to the previous one (like a blockchain), making it tamper-proof and verifiable.</td><td>OpenFang includes a Merkle hash-chain audit trail. If an agent does something, you can prove — and verify — exactly what it did.</td></tr>
+        <tr><td class="term">Credential isolation</td><td>Ensuring that agents never see raw API keys or passwords — they use tokens or proxies instead, so a compromised agent cannot exfiltrate credentials.</td><td>NemoClaw's L7 proxy is the strongest implementation: agents work through placeholder tokens. OpenFang zeroes secrets after use.</td></tr>
+        <tr><td class="term">Secret zeroization</td><td>Clearing sensitive values (passwords, API keys) from memory immediately after use, so they cannot be read by an attacker who gains memory access.</td><td>OpenFang zeroes secrets from memory. This goes beyond what most frameworks do (environment variables that persist in memory).</td></tr>
+        <tr><td class="term">Prompt injection</td><td>An attack where malicious content in data the agent reads (a webpage, an email, a document) tricks the agent into executing unintended instructions.</td><td>OpenClaw has no built-in defence. NemoClaw includes SSRF validation and approval flows. OpenFang has built-in scanning.</td></tr>
+        <tr><td class="term">SSRF</td><td>Server-Side Request Forgery — an attack where a malicious actor tricks a server (or agent) into making requests to internal systems it should not be able to reach.</td><td>NemoClaw's network policy layer explicitly blocks SSRF by allowlisting which endpoints an agent can contact.</td></tr>
+        <tr><td class="term">Path traversal</td><td>An attack where an application is tricked into accessing files outside its intended directory (e.g., reading <code>../../etc/passwd</code>).</td><td>Relevant to any agent with filesystem access. NemoClaw's Landlock sandbox restricts filesystem paths.</td></tr>
+        <tr><td class="term">Policy layer</td><td>A system that defines and enforces rules about what agents are allowed to do — which network addresses they can contact, which files they can access, which tools they can invoke.</td><td>NemoClaw has a 4-layer policy (network, filesystem, process, inference). OpenFang has 16 built-in security systems. OpenClaw has none.</td></tr>
+        <tr><td class="term">Guardrails</td><td>Controls that prevent an agent from taking harmful, unsafe, or out-of-scope actions. Can be hard blocks (never do X) or soft checks (ask a human before doing X).</td><td>OpenClaw's biggest weakness. NemoClaw and OpenFang both treat guardrails as a core feature.</td></tr>
+        <tr><td class="term">Taint tracking</td><td>A technique that marks data from untrusted sources (e.g., external websites) and traces how that data flows through the system, blocking it from being used in dangerous ways.</td><td>OpenFang includes taint tracking as part of its 16 security systems — a defence against prompt injection from external content.</td></tr>
+        <tr><td class="term">Signed manifests</td><td>A cryptographic signature on a tool or plugin's metadata, proving it came from a trusted source and has not been tampered with.</td><td>OpenFang requires signed manifests for tool governance — a defence against supply-chain attacks in the plugin ecosystem.</td></tr>
+        <tr><td class="term">Observability</td><td>The ability to understand what a system is doing internally by examining its outputs (logs, metrics, traces). "Can you debug it without touching the code?"</td><td>All three have basic logging. None have deep LLM-specific tracing (token-level spans, prompt/completion recording).</td></tr>
+        <tr><td class="term">Audit trail</td><td>A chronological record of all actions taken by an agent, typically including what was done, by whom, and when.</td><td>OpenClaw has no default audit trail. NemoClaw logs at the gateway. OpenFang has a tamper-proof Merkle chain.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══════════════ MODULE 1 ═══════════════ -->
+<section id="mod1">
+  <h2><span class="section-num">Module 01 // 0:00–1:00</span>Foundations &amp; Vocabulary</h2>
+
+  <h3>What is an AI agent, really?</h3>
+  <p>The word "agent" is used so loosely in AI discourse that it has almost lost meaning. Before this course uses it any further, let's be precise. An AI agent is a software system that:</p>
+  <ol style="margin-left:24px; margin-bottom:18px; font-size:0.95rem;">
+    <li style="margin-bottom:8px"><strong>Perceives</strong> its environment (reads messages, files, API responses, web pages)</li>
+    <li style="margin-bottom:8px"><strong>Reasons</strong> about what to do (using an LLM or another planner)</li>
+    <li style="margin-bottom:8px"><strong>Acts</strong> in the world (calls APIs, writes files, sends messages, makes decisions)</li>
+    <li><strong>Persists</strong> state across actions (remembers what it has done and what happened)</li>
+  </ol>
+  <p>Most chat interfaces fail point 3 and 4. They respond but do not <em>act</em>, and they forget everything when the session ends. A true agent is more like an employee you give a task to and trust to complete it — not a search engine you ask for answers.</p>
+
+  <div class="callout info">
+    <div class="callout-title">Analogy: The email assistant</div>
+    <p>A reactive agent is like a human assistant who only works when you send them a message. A proactive agent is like one who reads your calendar every Monday morning, notices you have a board meeting Thursday, and sends you a competitor briefing by Tuesday — without being asked. Both are "agents." The second one is far more powerful — and far more risky if something goes wrong.</p>
+  </div>
+
+  <h3>The reactive–proactive spectrum</h3>
+  <p><strong>Reactive agents</strong> wait. They sit idle until a user sends a message, then process it and respond. They are easier to build, easier to reason about, and easier to debug — because every action has a clear human trigger. OpenClaw is fundamentally reactive. You message it through Slack or Telegram; it responds.</p>
+  <p><strong>Proactive agents</strong> initiate. They wake up on a schedule, monitor external feeds, notice changes, and take action. OpenFang's Hands are proactive: a "Researcher Hand" might check a list of competitors every morning and email a briefing, or a "Collector Hand" might monitor social media for mentions of your brand and update a knowledge graph. No human prompt required.</p>
+  <p>The tradeoff is significant. Proactive agents are more powerful but require more rigorous security and control infrastructure. A reactive agent can only damage things when a human asks it to. A proactive agent can damage things at 3am on a Tuesday, unsupervised.</p>
+
+  <h3>Framework vs Wrapper vs Operating System</h3>
+  <p>This is the conceptual heart of the entire course. The three projects represent three different architectural philosophies, and the labels matter:</p>
+
+  <div class="full-border">
+    <h4>// Framework (OpenClaw)</h4>
+    <p>A framework provides building blocks. You, the developer, assemble them into an agent. OpenClaw gives you a runtime (Node.js/TypeScript), a massive library of community-built skills, a memory system, a messaging layer, and a plugin mechanism (MCP). Security is your problem. Governance is your problem. You pick the pieces that matter to you and wire them together.</p>
+    <p>The analogy: Linux user-space before systemd. Tremendously powerful, endlessly configurable, but you have to know what you're doing.</p>
+
+    <h4>// Wrapper (NemoClaw)</h4>
+    <p>A security wrapper does not replace the underlying system — it constrains it. NemoClaw is NVIDIA's answer to "OpenClaw is powerful but unsafe." It places OpenClaw inside a hardened Linux container (OpenShell), runs a Layer 7 proxy between OpenClaw and the outside world, enforces network and filesystem policies, and handles credential isolation so the agent never sees raw API keys. But critically: <strong>NemoClaw does not run without OpenClaw</strong>. It provides no agent capabilities of its own. All the skills, memory, and tool calling come from OpenClaw.</p>
+    <p>The analogy: SELinux on top of Linux. The kernel is still Linux; SELinux just enforces strict rules about what Linux processes are allowed to do.</p>
+
+    <h4>// Agent OS (OpenFang)</h4>
+    <p>An Agent OS is something different in kind. Rather than building security on top of an existing agent framework, OpenFang was designed from the beginning with the thesis that agents need operating-system-level primitives — scheduling, access control, memory management, inter-agent communication, cost governance — built into the kernel, not bolted on. OpenFang is written in Rust (not TypeScript), ships as a single binary, and internalises the security that NemoClaw provides externally, plus adds its own capabilities.</p>
+    <p>The analogy: macOS vs a Linux distribution running SELinux. They achieve similar goals (running applications safely) but one was designed for it from the ground up, and the other assembled it from parts.</p>
+  </div>
+
+  <h3>The three projects at a glance</h3>
+  <div class="diagram">
+    <span class="box-oc">┌──────────────────────────────────────────────────────────────┐</span><br>
+    <span class="box-oc">│  OpenClaw                                                     │</span><br>
+    <span class="box-oc">│  The agent — runtime, skills, memory, MCP, messaging          │</span><br>
+    <span class="box-oc">│  325K+ stars · 13,700+ skills · 25+ channels · TypeScript     │</span><br>
+    <span class="box-oc">│                                                               │</span><br>
+    <span class="box-oc">│  </span><span class="box-nc">┌───────────────────────────────────────────────────────┐</span><span class="box-oc">  │</span><br>
+    <span class="box-oc">│  </span><span class="box-nc">│  NemoClaw (NVIDIA)                                    │</span><span class="box-oc">  │</span><br>
+    <span class="box-oc">│  </span><span class="box-nc">│  Security wrapper — sandboxes OpenClaw inside         │</span><span class="box-oc">  │</span><br>
+    <span class="box-oc">│  </span><span class="box-nc">│  OpenShell with policy, credentials, inference proxy  │</span><span class="box-oc">  │</span><br>
+    <span class="box-oc">│  </span><span class="box-nc">└───────────────────────────────────────────────────────┘</span><span class="box-oc">  │</span><br>
+    <span class="box-oc">└──────────────────────────────────────────────────────────────┘</span><br>
+    <br>
+    <span class="box-of">┌──────────────────────────────────────────────────────────────┐</span><br>
+    <span class="box-of">│  OpenFang                                                     │</span><br>
+    <span class="box-of">│  Standalone alternative — "Agent OS" that builds security,    │</span><br>
+    <span class="box-of">│  RBAC, audit, and cost controls directly into the runtime     │</span><br>
+    <span class="box-of">│  16.6K stars · 60 skills · 40 channels · Rust · MIT           │</span><br>
+    <span class="box-of">│  (includes migration engine from OpenClaw)                    │</span><br>
+    <span class="box-of">└──────────────────────────────────────────────────────────────┘</span>
+  </div>
+  <p style="color:var(--muted); font-size:0.85rem; font-style:italic; margin-top:-12px;">OpenClaw is the agent. NemoClaw wraps it. OpenFang replaces it.</p>
+
+  <h3>Why skills and tools matter so much</h3>
+  <p>An agent without tools can only talk. A tool call is how an agent actually does something in the world: searches the web, reads a file, calls an API, executes code. Every tool call is also a potential attack surface.</p>
+  <p>OpenClaw has an enormous community-built skill ecosystem: over 13,700 skills on ClawHub. This is genuinely impressive — it means OpenClaw can do almost anything if someone has built a skill for it. But a 2024 community audit flagged 20–26% of those skills for security vulnerabilities. When you install a community skill, you are running someone else's code with your agent's credentials. This is the plugin supply-chain problem.</p>
+  <p>OpenFang ships 53 built-in skills and 60 bundled agents, all vetted by the core team. The community FangHub is smaller but, in theory, more curated. You gain trust at the cost of breadth.</p>
+
+  <div class="callout warn">
+    <div class="callout-title">The plugin supply-chain risk</div>
+    <p>When a developer installs 50 community skills, they are trusting 50 different authors with agent-level access to their systems. A single malicious or poorly-written skill can exfiltrate credentials, read files it shouldn't, or manipulate the agent's memory. This risk is structural in any large open plugin ecosystem. It is not unique to OpenClaw, but OpenClaw's scale makes it particularly visible.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══════════════ MODULE 2 ═══════════════ -->
+<section id="mod2">
+  <h2><span class="section-num">Module 02 // 1:00–2:00</span>System Anatomy &amp; Comparative Architecture</h2>
+
+  <h3>Memory: the knowledge backbone</h3>
+  <p>Memory is one of the most important differentiators between agent systems — and one of the least understood. There are multiple layers of memory in a sophisticated agent:</p>
+  <ul style="margin-left:24px; margin-bottom:18px;">
+    <li style="margin-bottom:10px"><strong>In-context memory:</strong> The text currently in the LLM's context window. Limited by the model's context length. Lost when the session ends.</li>
+    <li style="margin-bottom:10px"><strong>Short-term memory:</strong> State kept in the current session but not persisted to disk. Survives within a run; lost at shutdown.</li>
+    <li style="margin-bottom:10px"><strong>Long-term memory:</strong> Persisted to disk (SQLite, embeddings, files). Survives restarts. This is where the real value is — and the real complexity.</li>
+    <li><strong>Knowledge graphs:</strong> Structured representations of facts and relationships, updated dynamically as the agent learns new information.</li>
+  </ul>
+
+  <p><strong>OpenClaw</strong> has the most mature local-first knowledge stack. Its <code>memorySearch</code> library uses hybrid search — combining vector similarity (sqlite-vec) with keyword matching (FTS5 BM25) — and was so well-engineered that the Milvus community extracted it as a standalone library. There is also a community-built 12-layer knowledge architecture with graph-memory support. OpenClaw can auto-chunk Markdown documents, embed them, index them, and retrieve them as part of a local RAG pipeline.</p>
+
+  <p><strong>OpenFang</strong> has competitive memory — it uses SQLite plus embeddings, plus an unusual LLM-based compaction step that distils older memories into higher-level abstractions rather than simply dropping them. Memory is also cross-channel, so context from a Slack conversation carries over to a Teams interaction. What OpenFang lacks is hybrid search (it uses vector-only) and a dedicated RAG pipeline with automatic chunking and indexing.</p>
+
+  <p><strong>NemoClaw</strong> does not attempt memory at all. It defers entirely to OpenClaw's memory system, inheriting whatever OpenClaw provides.</p>
+
+  <div class="callout key">
+    <div class="callout-title">Key insight: RAG vs memory retrieval</div>
+    <p>RAG (Retrieval-Augmented Generation) is not the same as memory. RAG is specifically about indexing a corpus of documents — chunking them, embedding them, and retrieving relevant chunks at query time. Memory is broader: it includes conversation history, user preferences, task state, and learned facts. OpenClaw has both. OpenFang has strong memory but weaker RAG. This matters when you need to query a large document corpus.</p>
+  </div>
+
+  <h3>Tool ecosystems: scale vs integrity</h3>
+  <p>Tool ecosystem size is one of the most visible differentiators between OpenClaw and OpenFang, and it's worth thinking carefully about what that difference actually means in practice.</p>
+
+  <p>OpenClaw's 13,700+ skills represent years of community development and a genuine network effect. If you need to do something unusual — control a specific smart home device, integrate with an obscure API, run a particular CLI tool — there is a reasonable chance someone has already built an OpenClaw skill for it. This breadth is not easily replicated.</p>
+
+  <p>OpenFang's 53 built-in skills and 60 bundled agents are curated by the core team. They cover the most common use cases — web research, content creation, lead generation, OSINT, social media, email — but not the long tail of specialised integrations. OpenFang is betting that architectural integrity and security are worth the smaller ecosystem. For many production use cases, that bet is reasonable. For highly specialised power-user workflows, it may not be.</p>
+
+  <h3>The MCP and A2A protocols</h3>
+  <p>Two protocols deserve attention because they define how agents connect to the wider world:</p>
+
+  <p><strong>MCP (Model Context Protocol)</strong>, developed by Anthropic, is a standard interface for connecting AI systems to external tools and data sources. Think of it as USB for AI — a common plug standard that means a tool built for one runtime can theoretically work with any MCP-compatible runtime. OpenClaw supports 500+ MCP tools via its MCPorter system. OpenFang supports MCP in both client mode (consuming tools) and server mode (exposing its own capabilities to other systems). NemoClaw controls MCP access via network policy — it doesn't disable it, but it restricts which endpoints the agent can actually reach.</p>
+
+  <p><strong>A2A (Agent-to-Agent protocol)</strong>, from Google, defines how separate AI agents communicate, negotiate, and delegate tasks to each other. This is increasingly important as real systems move from single-agent to multi-agent architectures. OpenFang supports A2A plus its own OFP peer-to-peer protocol. OpenClaw has A2A on its roadmap. NemoClaw has no A2A support.</p>
+
+  <h3>Scheduling and proactive behaviour</h3>
+  <p>Scheduling is where reactive and proactive agents most clearly diverge. A scheduler allows an agent to be triggered by time rather than by user input. This enables entirely different use cases:</p>
+
+  <ul style="margin-left:24px; margin-bottom:18px;">
+    <li style="margin-bottom:8px">A competitive intelligence agent that runs every morning, checks five competitor websites, compares them to last week's versions, and sends you a briefing</li>
+    <li style="margin-bottom:8px">A lead generation agent that scrapes LinkedIn and enriches a CRM every night at 2am</li>
+    <li style="margin-bottom:8px">An OSINT monitoring agent that checks for mentions of your brand across social platforms hourly</li>
+  </ul>
+
+  <p>OpenClaw provides a Proactive Engine with cron and heartbeat triggering. OpenFang's Hands are schedule-driven by design — they are proactive agents as a first-class concept. NemoClaw has no scheduler; it adds security to OpenClaw's existing triggering mechanism but provides none of its own.</p>
+
+  <h3>API layers and programmability</h3>
+  <p>How programmable is each system? That is, can another system call it as a service rather than a user interacting with it through a chat interface?</p>
+  <p>OpenFang leads here clearly. Its REST API is OpenAI-compatible with over 140 endpoints, which means any tool already written for the OpenAI API can talk to OpenFang without modification. This makes OpenFang a backend for custom-built applications, not just a standalone assistant.</p>
+  <p>OpenClaw and NemoClaw both have partial API support — you can interact with them programmatically, but the surface area is smaller and less standardised.</p>
+
+  <h3>Model routing and cost governance</h3>
+  <p>All three projects are model-agnostic — they can route requests to OpenAI, Anthropic, Mistral, or a local Ollama instance. None of them host their own models. This is the right design: they are agents, not model providers.</p>
+  <p>What separates them is what happens <em>above</em> the routing decision. OpenFang is the only one with per-agent budget tracking and cost-aware routing. This means you can tell OpenFang "this particular agent has a $5/day budget, and should use cheaper models for simple tasks." As agentic systems scale in enterprise settings, this kind of financial governance becomes non-negotiable.</p>
+
+  <h3>Where do LangGraph, CrewAI, and AutoGen fit?</h3>
+  <p>The broader agent landscape includes projects that were not designed as user-facing runtimes but as developer orchestration frameworks. Understanding the categories helps:</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Project</th><th>Category</th><th>Primary abstraction</th><th>Best for</th></tr></thead>
+      <tbody>
+        <tr><td><strong>OpenClaw</strong></td><td>Agent framework / messaging runtime</td><td>Skills, channels, memory</td><td>Personal AI assistant; messaging-first workflows</td></tr>
+        <tr><td><strong>OpenFang</strong></td><td>Agent OS</td><td>Hands, capability gates, cost controls</td><td>Autonomous scheduled agents; security-first deployments</td></tr>
+        <tr><td><strong>NemoClaw</strong></td><td>Security wrapper</td><td>Policy layers, credential proxy</td><td>Making OpenClaw safe to run; NVIDIA hardware</td></tr>
+        <tr><td><strong>LangGraph</strong></td><td>Orchestration graph library</td><td>Nodes, edges, state machines</td><td>Complex developer-built multi-step workflows with branching logic</td></tr>
+        <tr><td><strong>CrewAI</strong></td><td>Multi-agent collaboration layer</td><td>Crews, agents, tasks</td><td>Coordinating teams of specialised agents on a shared goal</td></tr>
+        <tr><td><strong>AutoGen</strong></td><td>Conversational multi-agent framework</td><td>Agents, conversations, human-in-loop</td><td>Research and prototyping of agent interactions</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>The key observation: LangGraph, CrewAI, and AutoGen are developer-facing libraries. They give you primitives to <em>build</em> multi-agent systems. OpenClaw, NemoClaw, and OpenFang are deployable runtimes — they are the agent, not just the scaffold for building one. They are different layers of the stack and can, in principle, be combined (e.g., a CrewAI orchestration layer sitting on top of OpenFang-based agents).</p>
+</section>
+
+<hr>
+
+<!-- ═══════════════ MODULE 3 ═══════════════ -->
+<section id="mod3">
+  <h2><span class="section-num">Module 03 // 2:00–3:00</span>Security, Tradeoffs &amp; Production Decisions</h2>
+
+  <h3>Three security philosophies</h3>
+  <p>Security is the clearest dividing line between the three projects, and understanding the philosophy behind each approach is more useful than memorising the feature list. Each project has a coherent, internally consistent security position — they just disagree fundamentally about where security belongs.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Dimension</th><th>OpenClaw</th><th>NemoClaw</th><th>OpenFang</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Philosophy</strong></td><td>"Community will provide"</td><td>"Wrap it in a secure box"</td><td>"Build security into the kernel"</td></tr>
+        <tr><td><strong>Default posture</strong></td><td class="yellow">Open — full tool access</td><td class="green">Deny-by-default</td><td class="green">Least-privilege by design</td></tr>
+        <tr><td><strong>Built-in security systems</strong></td><td class="red">0 built-in</td><td class="yellow">4-layer (network, filesystem, process, inference)</td><td class="green">16 built-in systems</td></tr>
+        <tr><td><strong>RBAC</strong></td><td class="red">None</td><td class="yellow">Deny-by-default (not per-tool)</td><td class="green">Kernel-level per-agent capability gates</td></tr>
+        <tr><td><strong>Credential handling</strong></td><td class="red">Environment variables</td><td class="green">L7 proxy, placeholder tokens</td><td class="green">Secret zeroization</td></tr>
+        <tr><td><strong>Audit trail</strong></td><td class="red">None by default</td><td class="yellow">Gateway logging</td><td class="green">Merkle hash-chain (tamper-proof)</td></tr>
+        <tr><td><strong>Prompt injection defence</strong></td><td class="red">None</td><td class="yellow">SSRF validation, approval flows</td><td class="green">Built-in taint tracking + scanning</td></tr>
+        <tr><td><strong>Tool governance</strong></td><td class="yellow">Any configured skill runs</td><td class="yellow">Network policy allowlists</td><td class="green">Capability gates + signed manifests</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>OpenClaw's security position — a design choice, not an oversight</h3>
+  <p>It is tempting to read OpenClaw's 0-out-of-many security score as a failure. It isn't. OpenClaw was designed as a personal AI assistant — the model assumes the operator trusts the environment and trusts themselves. When you run OpenClaw on your laptop to help manage your own files and emails, the threat model is different from running an autonomous agent on a corporate server with access to production databases. OpenClaw's design choice makes complete sense for its original use case.</p>
+  <p>The problem emerges at the margins: when OpenClaw is used for autonomous, unsupervised tasks with access to real systems; when community skills are installed without review; or when the agent is connected to corporate infrastructure. That's when "community will provide" security becomes a liability. NemoClaw and OpenFang both exist because of this gap.</p>
+
+  <div class="callout warn">
+    <div class="callout-title">Warning: 20–26% skill vulnerability rate</div>
+    <p>A community audit of OpenClaw skills found that roughly one in five or six had security vulnerabilities. When you run 50 community skills, statistically speaking, you are probably running 8–13 vulnerable ones. In a personal assistant context, this is a nuisance. In an autonomous agent with real-world access, it is a critical risk vector.</p>
+  </div>
+
+  <h3>NemoClaw's approach: the trusted sandbox</h3>
+  <p>NemoClaw's model is elegant in its simplicity: don't trust OpenClaw; contain it. Every OpenClaw action flows through NemoClaw's OpenShell environment, which enforces:</p>
+  <ul style="margin-left:24px; margin-bottom:18px;">
+    <li style="margin-bottom:6px"><strong>Network policy:</strong> An allowlist of which external endpoints the agent can contact. Everything else is blocked.</li>
+    <li style="margin-bottom:6px"><strong>Filesystem policy:</strong> Landlock (Linux 5.13+) restricts which directories the agent can read or write.</li>
+    <li style="margin-bottom:6px"><strong>Process policy:</strong> seccomp and cap-drop=ALL restrict which Linux system calls the agent runtime can make.</li>
+    <li><strong>Inference policy:</strong> All LLM calls are routed through NemoClaw's proxy, which can inspect, filter, and log them.</li>
+  </ul>
+  <p>Credential isolation is NemoClaw's strongest feature: the L7 proxy intercepts API calls and substitutes real credentials for placeholder tokens at the network edge. OpenClaw never sees the actual API key — it only sees a token that the proxy exchanges for the real thing. This means a prompt injection attack that tricks OpenClaw into exfiltrating its environment variables gets nothing useful.</p>
+
+  <div class="callout warn">
+    <div class="callout-title">NemoClaw's limitations</div>
+    <p>NemoClaw is alpha software (v0.1.0, March 2026). Its Landlock filesystem sandboxing requires Linux kernel 5.13 or higher — it does not work on macOS or Windows, and it does not work on older Linux systems. It targets NVIDIA hardware (RTX, DGX). And because it wraps OpenClaw rather than replacing it, it inherits OpenClaw's architectural constraints: no scheduler, no per-agent RBAC, no cost controls, no A2A.</p>
+  </div>
+
+  <h3>OpenFang's approach: the trusted agent</h3>
+  <p>OpenFang inverts NemoClaw's logic. Rather than asking "how do we make an untrusted agent safe to run?", it asks "how do we build an agent that is trustworthy by construction?" Security in OpenFang is not a wrapper — it is the kernel. Key elements:</p>
+  <ul style="margin-left:24px; margin-bottom:18px;">
+    <li style="margin-bottom:8px"><strong>WASM sandboxing:</strong> Tool execution happens inside WebAssembly sandboxes, isolating each tool from the host and from other tools.</li>
+    <li style="margin-bottom:8px"><strong>Capability gates:</strong> Per-agent RBAC enforced in Rust. Each agent has a capability manifest defining exactly what it is allowed to access.</li>
+    <li style="margin-bottom:8px"><strong>Signed manifests:</strong> Tools must carry cryptographic signatures from trusted publishers before they can be installed.</li>
+    <li style="margin-bottom:8px"><strong>Taint tracking:</strong> Data from untrusted external sources is marked and traced through the system, preventing it from being used in dangerous ways.</li>
+    <li style="margin-bottom:8px"><strong>Merkle audit trail:</strong> Every action is recorded in a hash-chained log that is tamper-proof and cryptographically verifiable.</li>
+    <li><strong>Secret zeroization:</strong> Credentials are cleared from memory immediately after use — a malicious process reading OpenFang's memory cannot find active API keys.</li>
+  </ul>
+
+  <h3>Operational characteristics</h3>
+  <p>These are the numbers that matter when you are making a decision about whether a system can actually be run in production at scale:</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Characteristic</th><th>OpenClaw</th><th>NemoClaw</th><th>OpenFang</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Language</strong></td><td>TypeScript / Node.js</td><td>TypeScript CLI + Rust runtime</td><td>Rust (137K LoC, 14 crates)</td></tr>
+        <tr><td><strong>Cold start</strong></td><td>Seconds (Node startup)</td><td>Seconds + sandbox init</td><td class="green">~180ms</td></tr>
+        <tr><td><strong>Idle memory</strong></td><td>~200–400MB (Node.js)</td><td>Adds sandbox overhead</td><td class="green">~40MB</td></tr>
+        <tr><td><strong>Deployment</strong></td><td>npm install + config</td><td>OpenShell container + OpenClaw</td><td class="green">Single binary</td></tr>
+        <tr><td><strong>License</strong></td><td>Apache 2.0 (→ non-profit)</td><td>Apache 2.0 (NVIDIA)</td><td>MIT</td></tr>
+        <tr><td><strong>Maturity</strong></td><td class="green">Most mature; 1,100+ contributors</td><td class="red">Alpha v0.1.0 (March 2026)</td><td class="yellow">Pre-1.0, v0.5.9</td></tr>
+        <tr><td><strong>GitHub stars</strong></td><td class="green">325K+</td><td class="yellow">19K+</td><td class="yellow">16.6K</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>A critical note on source material bias</h3>
+  <p>A significant amount of publicly available writing about OpenFang — including the HackerNoon article this course draws from — is strongly promotional in tone. That article reads as advocacy for OpenFang, not as neutral analysis. When evaluating architectural claims about any of these systems, keep a few critical questions in mind:</p>
+
+  <ol style="margin-left:24px; margin-bottom:18px;">
+    <li style="margin-bottom:8px"><strong>Who is writing?</strong> Is this a neutral comparison, a vendor announcement, or a contributor to one of the projects?</li>
+    <li style="margin-bottom:8px"><strong>Is it verified?</strong> Performance numbers, security claims, and feature counts should be independently verified before being used to justify real architectural decisions.</li>
+    <li style="margin-bottom:8px"><strong>What is not being measured?</strong> The comparison data in this course includes community star counts as a proxy for ecosystem maturity, but stars are an imperfect measure. Documentation quality, response time on issues, upgrade stability, and production case studies are harder to quantify but often more important.</li>
+    <li><strong>Where is the evidence weak?</strong> OpenFang's 16-security-system claim has not been independently audited at the time of writing. "Built-in" security does not automatically mean "effective" security.</li>
+  </ol>
+
+  <div class="callout purple">
+    <div class="callout-title">The ecosystem maturity problem</div>
+    <p>OpenFang may have better security architecture on paper, but OpenClaw has years of community feedback, real-world debugging, and an ecosystem of people who have hit production edge cases and documented solutions. For a production team, a well-understood system with known limitations is often preferable to a better-designed system with unknown failure modes. This is a real tradeoff, not a marketing talking point.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══════════════ SUPPLEMENTS ═══════════════ -->
+<section id="supplements">
+  <h2><span class="section-num">Deep Dives</span>What a Serious Student Would Still Be Missing</h2>
+  <p>After working through the three modules, there are several gaps a rigorous learner should notice. This section addresses them directly with structured supplementary content.</p>
+
+  <h3>1 — Side-by-side comparison matrix</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Capability</th><th>OpenClaw</th><th>NemoClaw</th><th>OpenFang</th></tr></thead>
+      <tbody>
+        <tr><td>Hybrid search (vector + BM25)</td><td class="green">✓ memorySearch</td><td>Defers to OpenClaw</td><td class="yellow">Vector only</td></tr>
+        <tr><td>Local RAG pipeline</td><td class="green">✓ Auto-chunk + index</td><td>Defers to OpenClaw</td><td class="yellow">Retrieves, no dedicated chunking</td></tr>
+        <tr><td>Built-in RBAC</td><td class="red">✗</td><td class="yellow">Deny-by-default, not per-tool</td><td class="green">✓ Kernel-level capability gates</td></tr>
+        <tr><td>Per-agent cost budgets</td><td class="red">✗</td><td class="red">✗</td><td class="green">✓</td></tr>
+        <tr><td>A2A protocol support</td><td class="yellow">Roadmap</td><td class="red">✗</td><td class="green">✓ Google A2A + OFP</td></tr>
+        <tr><td>MCP tool support</td><td class="green">✓ 500+ via MCPorter</td><td class="yellow">Controlled via policy</td><td class="green">✓ Client + server mode</td></tr>
+        <tr><td>Scheduling / proactive</td><td class="green">✓ Proactive Engine</td><td class="red">✗</td><td class="green">✓ Schedule-driven Hands</td></tr>
+        <tr><td>Pre-built autonomous agents</td><td class="yellow">1 (OpenClaw agent)</td><td class="red">0 (wraps OpenClaw)</td><td class="green">7 Hands + 30 total</td></tr>
+        <tr><td>Tamper-proof audit trail</td><td class="red">✗</td><td class="yellow">Gateway logs</td><td class="green">✓ Merkle hash-chain</td></tr>
+        <tr><td>Credential isolation</td><td class="red">Env vars</td><td class="green">✓ L7 proxy + placeholder tokens</td><td class="green">✓ Secret zeroization</td></tr>
+        <tr><td>Prompt injection defence</td><td class="red">✗</td><td class="yellow">SSRF validation, approval flows</td><td class="green">✓ Taint tracking + scanning</td></tr>
+        <tr><td>Skill ecosystem size</td><td class="green">13,700+ on ClawHub</td><td>Inherits OpenClaw</td><td class="yellow">53 built-in + FangHub</td></tr>
+        <tr><td>Messaging channels</td><td class="green">25+</td><td class="red">3 (Telegram, Discord, Slack)</td><td class="green">40 (incl. Teams, Webex)</td></tr>
+        <tr><td>OpenAI-compatible API</td><td class="yellow">Partial</td><td class="yellow">Partial</td><td class="green">✓ 140+ endpoints</td></tr>
+        <tr><td>Single binary deployment</td><td class="red">✗</td><td class="red">✗</td><td class="green">✓ 180ms cold start, 40MB idle</td></tr>
+        <tr><td>Production maturity</td><td class="green">High</td><td class="red">Alpha</td><td class="yellow">Pre-1.0</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>2 — Decision guide: How to choose</h3>
+  <div class="decision-tree">
+    <div class="dt-node dt-q">Is security a first-class requirement — not something you'll add later?</div>
+    <div class="dt-node dt-a">
+      <strong>Yes →</strong> Immediately eliminate OpenClaw alone. Go to next question.
+      <br><strong>No (personal assistant, trusted env) →</strong> <span class="dt-result dt-oc">OpenClaw</span> is fine.
+    </div>
+
+    <div class="dt-node dt-q" style="margin-top:20px">Do you have NVIDIA hardware (RTX 4090, DGX Spark, DGX Station) and want OpenClaw's ecosystem?</div>
+    <div class="dt-node dt-a">
+      <strong>Yes →</strong> <span class="dt-result dt-nc">OpenClaw + NemoClaw</span> — you get ecosystem breadth with sandbox security. Accept alpha maturity and Linux 5.13+ requirement.
+      <br><strong>No →</strong> Continue.
+    </div>
+
+    <div class="dt-node dt-q" style="margin-top:20px">Do you need the long tail of community integrations (13,700+ skills, specialised tools)?</div>
+    <div class="dt-node dt-a">
+      <strong>Yes →</strong> <span class="dt-result dt-oc">OpenClaw</span> (accept security gaps or add NemoClaw).
+      <br><strong>No →</strong> Continue.
+    </div>
+
+    <div class="dt-node dt-q" style="margin-top:20px">Do you need proactive scheduled agents, per-agent cost control, tamper-proof audit trails, or A2A?</div>
+    <div class="dt-node dt-a">
+      <strong>Yes →</strong> <span class="dt-result dt-of">OpenFang</span> — and accept the smaller ecosystem and pre-1.0 status.
+    </div>
+
+    <div class="dt-node dt-q" style="margin-top:20px">Is performance critical? (Sub-second response, many concurrent agents, low memory overhead)</div>
+    <div class="dt-node dt-a">
+      <strong>Yes →</strong> <span class="dt-result dt-of">OpenFang</span> — Rust runtime, 180ms cold start, 40MB idle.
+    </div>
+  </div>
+
+  <h3>3 — Shared gaps: What none of them solve</h3>
+  <p>A production deployment of any of these systems will require supplementary infrastructure. These are not gaps that any of the three is <em>about</em> to fill — they are gaps by design, reflecting that all three are agent runtimes, not full platforms.</p>
+
+  <div class="gap-grid">
+    <div class="gap-card">
+      <h4>Infrastructure &amp; Compute</h4>
+      <p>All three are bring-your-own-compute. You need a cloud provider, a server, or local hardware. None manage scaling, failover, or capacity.</p>
+    </div>
+    <div class="gap-card">
+      <h4>Storage &amp; Databases</h4>
+      <p>All use local SQLite. No managed database, vector DB, or graph DB. At scale you'll need Supabase, Pinecone, Weaviate, or Neo4j.</p>
+    </div>
+    <div class="gap-card">
+      <h4>Deep LLM Observability</h4>
+      <p>All log at the request level. None have token-level tracing, prompt/completion recording, or LLM-specific span analysis. Use LangSmith, Braintrust, or Langfuse.</p>
+    </div>
+    <div class="gap-card">
+      <h4>Evaluation</h4>
+      <p>No LLM-as-judge, benchmark suite, or regression testing. You can't measure whether your agent is getting better or worse over time without external tools.</p>
+    </div>
+    <div class="gap-card">
+      <h4>Human Feedback</h4>
+      <p>No structured mechanism for collecting human corrections and feeding them back into model calibration. Requires external tooling (Argilla, Scale AI).</p>
+    </div>
+    <div class="gap-card">
+      <h4>Enterprise Identity</h4>
+      <p>All are single-user agents. No multi-tenancy, SSO, or directory integration (Entra ID, Cognito). Not enterprise-ready without significant custom work.</p>
+    </div>
+    <div class="gap-card">
+      <h4>Horizontal Scaling</h4>
+      <p>All are single-instance. No HA, multi-node, or multi-tenant. KubeClaw provides some of this for OpenClaw; OpenFang has nothing equivalent yet.</p>
+    </div>
+    <div class="gap-card">
+      <h4>Durable Execution</h4>
+      <p>None have true checkpointing or replay. If an agent fails mid-task, it starts over. Temporal, Step Functions, or Durable Functions fill this gap.</p>
+    </div>
+  </div>
+
+  <h3>4 — The layered production stack</h3>
+  <p>These projects are Layer 7/8 specialists — they sit at the application layer. A real production deployment wraps them in a full stack:</p>
+
+  <div class="stack">
+    <div class="stack-layer sl-obs"><span class="stack-label">Eval / Obs</span><span>LangSmith · Braintrust · Langfuse · Arize — observability, evaluation, tracing</span></div>
+    <div class="stack-layer sl-agent"><span class="stack-label">Agent Layer</span><span><strong>OpenClaw / OpenClaw+NemoClaw / OpenFang</strong> — the subject of this course</span></div>
+    <div class="stack-layer sl-llm"><span class="stack-label">LLM Layer</span><span>OpenAI · Anthropic · Mistral · Ollama · NVIDIA NIM — model providers</span></div>
+    <div class="stack-layer sl-security"><span class="stack-label">Knowledge</span><span>Pinecone · Weaviate · Neo4j · Supabase — persistent storage, vector DB, graph DB at scale</span></div>
+    <div class="stack-layer sl-compute"><span class="stack-label">Compute</span><span>AWS · Azure · GCP · NVIDIA DGX · your own hardware — infrastructure</span></div>
+  </div>
+
+  <h3>5 — Risk and mitigation checklist</h3>
+  <p>Before deploying any of these systems with access to real production resources, work through this checklist:</p>
+
+  <div class="checklist">
+    <div class="check-item"><span class="check-icon">🔑</span><span><strong>Credential exposure:</strong> Are API keys in environment variables? (OpenClaw default) If so, use NemoClaw's L7 proxy or vault them externally.</span></div>
+    <div class="check-item"><span class="check-icon">🔌</span><span><strong>Plugin supply chain:</strong> Have all installed skills/tools been reviewed? Community skills have a 20–26% vulnerability rate.</span></div>
+    <div class="check-item"><span class="check-icon">💉</span><span><strong>Prompt injection:</strong> Does the agent read external content (web, email, documents)? If so, you need taint tracking or content validation before that data reaches the LLM.</span></div>
+    <div class="check-item"><span class="check-icon">📋</span><span><strong>Audit trail:</strong> Can you reconstruct exactly what the agent did, when, and why? If not, you cannot diagnose failures or demonstrate compliance.</span></div>
+    <div class="check-item"><span class="check-icon">💰</span><span><strong>Cost runaway:</strong> Is there a per-agent budget cap? An agent in a feedback loop can exhaust your API quota in minutes without one.</span></div>
+    <div class="check-item"><span class="check-icon">🌐</span><span><strong>Network egress:</strong> Can the agent call any external endpoint? Without an allowlist, a prompt injection attack can exfiltrate data to an attacker's server.</span></div>
+    <div class="check-item"><span class="check-icon">📁</span><span><strong>Filesystem access:</strong> What directories can the agent read and write? Without path restrictions, a vulnerable skill can traverse to sensitive system files.</span></div>
+    <div class="check-item"><span class="check-icon">👤</span><span><strong>Human-in-the-loop:</strong> Are there approval gates for high-stakes actions (sending emails, deleting files, making purchases)? Or does the agent act autonomously on everything?</span></div>
+    <div class="check-item"><span class="check-icon">🔄</span><span><strong>Recovery plan:</strong> If the agent takes a wrong action, can you roll it back? None of these systems have built-in rollback mechanisms.</span></div>
+    <div class="check-item"><span class="check-icon">📊</span><span><strong>Observability:</strong> Can you see what the agent is doing in real time? Do you have alerting if it behaves unexpectedly?</span></div>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══════════════ EXERCISES ═══════════════ -->
+<section id="exercises">
+  <h2><span class="section-num">Practice</span>Exercises</h2>
+  <p>These exercises are designed to be done without looking things up — they test conceptual understanding, not memorisation. Spend 8–15 minutes on each.</p>
+
+  <div class="exercise">
+    <div class="exercise-num">Exercise 01 — Conceptual explanation</div>
+    <h4>Framework vs Wrapper vs Agent OS</h4>
+    <p>Explain, in your own words, the difference between an agent framework, a security wrapper, and an Agent OS. Your explanation should be clear enough that a non-technical product manager could understand the strategic significance of the distinction.</p>
+    <p><strong>Challenge:</strong> Use a non-AI analogy to make the distinction concrete. (The Linux/SELinux/macOS analogy is taken — find your own.)</p>
+    <p><strong>What to cover:</strong> Where capabilities live; where security lives; what the developer is responsible for assembling in each case; and why the distinction matters when you are deciding what to deploy.</p>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-num">Exercise 02 — Architecture design</div>
+    <h4>Design a competitive intelligence agent</h4>
+    <p>You are building an autonomous agent for a B2B SaaS company. The agent should: every weekday morning, visit five competitor websites, compare them to the versions from a week ago, identify pricing or feature changes, and send a structured report to a Slack channel.</p>
+    <ol>
+      <li>Which of the three projects (or combination) would you use, and why?</li>
+      <li>What additional infrastructure would you need (see the shared gaps section)?</li>
+      <li>What are the three biggest risks in this architecture, and how would you mitigate each?</li>
+      <li>What would break if a competitor website returned content containing a prompt injection attempt?</li>
+    </ol>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-num">Exercise 03 — Scenario-based selection</div>
+    <h4>Choose the right tool for three scenarios</h4>
+    <p>For each scenario below, choose between OpenClaw, OpenClaw + NemoClaw, and OpenFang. Justify your choice in 2–3 sentences, and name the single biggest tradeoff you are accepting.</p>
+    <ol>
+      <li>A developer wants a personal AI assistant connected to their Slack, email, and GitHub. They will install many community plugins. They run it on their own laptop. Security is secondary to capability breadth.</li>
+      <li>A fintech company wants to deploy an agent that has read access to their production database, can draft and send compliance reports, and must produce a tamper-proof audit log of every action for regulatory review.</li>
+      <li>An NVIDIA DGX Spark owner wants to run OpenClaw locally with optimised inference, but their security team requires that the agent never exfiltrate API keys and cannot contact arbitrary external URLs.</li>
+    </ol>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-num">Exercise 04 — Risk identification</div>
+    <h4>Audit the plugin ecosystem risk</h4>
+    <p>A startup is running OpenClaw with 80 community-installed skills from ClawHub. The agent has access to their email system, their internal Notion workspace, and their Stripe account (for generating invoices). The team believes they are safe because "it's all open source and we can audit the code."</p>
+    <ol>
+      <li>What specific risks does this setup carry that the team seems to be underestimating?</li>
+      <li>Walk through two concrete attack scenarios — one involving a malicious skill, one involving a prompt injection from an email the agent reads.</li>
+      <li>What is the minimum viable set of changes that would meaningfully reduce the risk without replacing the entire stack?</li>
+    </ol>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-num">Exercise 05 — Production readiness</div>
+    <h4>Draft a minimal production readiness checklist</h4>
+    <p>You have been asked by your engineering manager to produce a one-page checklist that any team must complete before deploying an autonomous AI agent with access to real company systems. The checklist should be framework-agnostic (it should work whether they choose OpenClaw, OpenFang, or something else).</p>
+    <p>Draft that checklist. Include at minimum: credential management, network egress controls, audit logging, cost governance, human-in-the-loop requirements, and rollback procedures. Annotate each item with one sentence explaining why it matters.</p>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-num">Exercise 06 — Business tradeoff analysis</div>
+    <h4>Ecosystem scale vs architectural integrity</h4>
+    <p>You are advising a 20-person startup that is choosing between OpenClaw (13,700+ community skills, mature ecosystem) and OpenFang (60 built-in agents, stronger security architecture). The startup's use case is an autonomous sales development representative (SDR) that researches prospects, drafts personalised outreach, and logs everything to HubSpot.</p>
+    <ol>
+      <li>What does OpenClaw's ecosystem breadth actually give you for this specific use case? What percentage of those 13,700 skills are relevant?</li>
+      <li>What does OpenFang's architectural integrity actually give you? What happens the day OpenFang doesn't have a skill you need?</li>
+      <li>What would change your recommendation if the startup raised a Series A and needed to demonstrate SOC 2 compliance in 12 months?</li>
+      <li>What is the argument for neither — for using LangGraph or CrewAI instead?</li>
+    </ol>
+  </div>
+</section>
+
+</div><!-- /.wrap -->
+</main>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+  <div class="wrap">
+    <h4>Source Material</h4>
+    <p style="margin-bottom:10px">
+      <strong>Primary source:</strong> HackerNoon article — "OpenFang: The Game-Changing Open-Source Agent Operating System That Replaces OpenClaw"<br>
+      <a href="https://terminal.hackernoon.com/openfangthe-game-changing-open-source-agent-operating-system-that-replaces-openclaw" target="_blank" rel="noopener">terminal.hackernoon.com/openfangthe-game-changing-open-source-agent-operating-system-that-replaces-openclaw</a>
+    </p>
+    <p style="margin-bottom:10px">
+      <strong>Primary source:</strong> AI Tech Stack 2026 — V4 Open Agent Roundup (cross-project comparison document covering OpenClaw, NemoClaw, and OpenFang against the V4 Checklist)
+    </p>
+    <p style="margin-bottom:24px">
+      <strong>Framing note:</strong> This course incorporates comparative architectural analysis based on structured comparison of OpenClaw (agent framework / messaging runtime), NemoClaw (NVIDIA security wrapper), and OpenFang (Agent OS), situated against adjacent frameworks including LangGraph, CrewAI, and AutoGen. Source material for the HackerNoon article is editorially pro-OpenFang in tone; course analysis attempts to represent each project fairly, including ecosystem maturity factors that favour OpenClaw and NemoClaw in specific contexts.
+    </p>
+    <p style="color:var(--muted); font-size:0.8rem">
+      This course is an educational synthesis. All performance figures, star counts, and feature claims should be independently verified before being used to justify production architecture decisions. The open-source ecosystem moves quickly; verify current project status before committing.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
